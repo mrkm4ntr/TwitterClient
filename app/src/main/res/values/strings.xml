@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Twitter Client</string>
+    <string name="action_settings">Settings</string>
+
+    <!-- SyncAdapter related -->
+    <string name="sync_account_type">twitterclient.mrkm4ntr</string>
+    <string name="content_authority">mrkm4ntr.twitterclient</string>
+</resources>
