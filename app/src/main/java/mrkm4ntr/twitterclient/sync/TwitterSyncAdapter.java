@@ -1,22 +1,37 @@
 package mrkm4ntr.twitterclient.sync;
 
 import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SyncResult;
 import android.os.Bundle;
 import android.util.Log;
 
-/**
- * Created by Shintaro on 2015/10/26.
- */
+import java.util.ArrayList;
+import java.util.List;
+
+import mrkm4ntr.twitterclient.R;
+import mrkm4ntr.twitterclient.activities.OAuthActivity;
+import mrkm4ntr.twitterclient.data.TwitterContract;
+import twitter4j.Status;
+import twitter4j.Twitter;
+import twitter4j.TwitterFactory;
+import twitter4j.User;
+import twitter4j.auth.AccessToken;
+
 public class TwitterSyncAdapter extends AbstractThreadedSyncAdapter {
 
     private static final String LOG_TAG = TwitterSyncAdapter.class.getSimpleName();
 
+    private Context mContext;
+
     public TwitterSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
+        mContext = context;
     }
 
     @Override
@@ -24,6 +39,52 @@ public class TwitterSyncAdapter extends AbstractThreadedSyncAdapter {
             Account account, Bundle bundle, String s, ContentProviderClient
             contentProviderClient, SyncResult syncResult) {
         Log.d(LOG_TAG, "Starting sync");
+        Twitter twitter = TwitterFactory.getSingleton();
+        twitter.setOAuthConsumer(OAuthActivity.CONSUMER_KEY, OAuthActivity.CONSUMER_SECRET);
+        AccountManager accountManager = AccountManager.get(mContext);
+
+        try {
+            String token = accountManager.blockingGetAuthToken(account, mContext.getString(R.string.sync_account_type), true);
+            String tokenSecret = accountManager.getPassword(account);
+            twitter.setOAuthAccessToken(new AccessToken(token, tokenSecret));
+            List<Status> statuses = twitter.getHomeTimeline();
+            List<User> friends = new ArrayList<>();
+
+            for (Status status : statuses) {
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(TwitterContract.StatusEntry._ID, status.getId());
+                contentValues.put(TwitterContract.StatusEntry.COLUMN_TEXT, status.getText());
+                contentValues.put(TwitterContract.StatusEntry.COLUMN_CREATE_AT, status.getCreatedAt().getTime());
+                mContext.getContentResolver().insert(TwitterContract.StatusEntry.CONTENT_URI, contentValues);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         // TODO HTTP access and call bulkInsert.
+    }
+
+    public static void syncImmediately(Context context) {
+        Bundle bundle = new Bundle();
+        bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        ContentResolver.requestSync(getSyncAccount(context),
+                context.getString(R.string.content_authority), bundle);
+    }
+
+    public static Account getSyncAccount(Context context) {
+        AccountManager accountManager =
+                (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
+        Account account = null;
+        Account[] accounts = accountManager.getAccountsByType(context.getString(R.string
+                .sync_account_type));
+        if (accounts.length == 0) {
+            account = new Account(context.getString(R.string.app_name), context.getString(R.string.sync_account_type));
+            accountManager.addAccountExplicitly(account, "", new Bundle());
+        } else {
+            account = accounts[0];
+        }
+        String authority = context.getString(R.string.content_authority);
+        ContentResolver.setSyncAutomatically(account, authority, true);
+        return account;
     }
 }

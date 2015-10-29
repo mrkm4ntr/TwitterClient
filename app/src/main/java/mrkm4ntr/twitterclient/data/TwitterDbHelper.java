@@ -1,0 +1,33 @@
+package mrkm4ntr.twitterclient.data;
+
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+
+public class TwitterDbHelper extends SQLiteOpenHelper {
+
+    private static final int DATABASE_VERSION = 2;
+    private static final String DATABASE_NAME = "twitter.db";
+
+    public TwitterDbHelper(Context context) {
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    }
+
+    private static final String SQL_CREATE_STATUS_TABLE =
+            String.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY, %s TEXT NOT NULL, %s INTEGER NOT NULL)",
+                    TwitterContract.StatusEntry.TABLE_NAME, TwitterContract.StatusEntry._ID,
+                    TwitterContract.StatusEntry.COLUMN_CREATE_AT, TwitterContract.StatusEntry.COLUMN_TEXT);
+
+    @Override
+    public void onCreate(SQLiteDatabase sqLiteDatabase) {
+        // TODO initialize DB
+        sqLiteDatabase.execSQL(SQL_CREATE_STATUS_TABLE);
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
+        // TODO insert table name
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TwitterContract.StatusEntry.TABLE_NAME);
+        onCreate(sqLiteDatabase);
+    }
+}

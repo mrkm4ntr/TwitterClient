@@ -5,11 +5,12 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import mrkm4ntr.twitterclient.R;
+import mrkm4ntr.twitterclient.sync.TwitterSyncAdapter;
 
 public class TimelineActivity extends AppCompatActivity {
 
@@ -24,7 +25,17 @@ public class TimelineActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                TwitterSyncAdapter.syncImmediately(getApplicationContext());
+                /*Context context = getApplicationContext();
+                try {
+                    Account account = new Account(context.getString(R.string.app_name), context.getString(R.string.sync_account_type));
+                    AccountManager.get(context).getAuthToken(account, context.getString(R.string
+                            .sync_account_type), new Bundle(), false, null, null);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }*/
+                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
             }
         });
     }

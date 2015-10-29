@@ -5,15 +5,18 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
-/**
- * Created by Shintaro on 2015/10/26.
- */
 public class TwitterAuthenticatorService extends Service {
+
+    private TwitterAuthenticator mAuthenticator;
+
+    @Override
+    public void onCreate() {
+        mAuthenticator = new TwitterAuthenticator(this);
+    }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        // TODO implement
-        return null;
+        return mAuthenticator.getIBinder();
     }
 }

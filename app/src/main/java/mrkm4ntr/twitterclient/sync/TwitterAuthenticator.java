@@ -3,17 +3,21 @@ package mrkm4ntr.twitterclient.sync;
 import android.accounts.AbstractAccountAuthenticator;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorResponse;
+import android.accounts.AccountManager;
 import android.accounts.NetworkErrorException;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 
-/**
- * Created by Shintaro on 2015/10/26.
- */
+import mrkm4ntr.twitterclient.activities.OAuthActivity;
+
 public class TwitterAuthenticator extends AbstractAccountAuthenticator {
+
+    private Context mContext;
 
     public TwitterAuthenticator(Context context) {
         super(context);
+        mContext = context;
     }
 
     @Override
@@ -24,9 +28,13 @@ public class TwitterAuthenticator extends AbstractAccountAuthenticator {
 
     @Override
     public Bundle addAccount(AccountAuthenticatorResponse accountAuthenticatorResponse, String s,
-                             String s1, String[] strings, Bundle bundle) throws
+                             String s1, String[] strings, Bundle options) throws
             NetworkErrorException {
-        return null;
+        Intent intent = new Intent(mContext, OAuthActivity.class);
+        intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, accountAuthenticatorResponse);
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(AccountManager.KEY_INTENT, intent);
+        return bundle;
     }
 
     @Override
@@ -38,7 +46,21 @@ public class TwitterAuthenticator extends AbstractAccountAuthenticator {
     @Override
     public Bundle getAuthToken(AccountAuthenticatorResponse accountAuthenticatorResponse, Account
             account, String s, Bundle bundle) throws NetworkErrorException {
-        return null;
+        AccountManager accountManager = AccountManager.get(mContext);
+        String authToken = accountManager.peekAuthToken(account, s);
+        if (authToken != null && !authToken.isEmpty()) {
+            Bundle result = new Bundle();
+            result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
+            result.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type);
+            result.putString(AccountManager.KEY_AUTHTOKEN, authToken);
+            return result;
+        } else {
+            Bundle result = new Bundle();
+            Intent intent = new Intent(mContext, OAuthActivity.class);
+            intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, accountAuthenticatorResponse);
+            result.putParcelable(AccountManager.KEY_INTENT, intent);
+            return result;
+        }
     }
 
     @Override
