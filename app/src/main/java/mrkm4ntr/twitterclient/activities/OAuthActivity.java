@@ -23,8 +23,8 @@ import twitter4j.auth.RequestToken;
 
 public class OAuthActivity extends AppCompatActivity {
 
-    public static final String CONSUMER_KEY = "r2LCdVqpxJeHO8mMVR6yt2TRY";
-    public static final String CONSUMER_SECRET = "5eJkB8AolrRwBZXSuaL0pA6nPtkNN0WBokPljH6w4VdCF9i1ie";
+    public static final String CONSUMER_KEY = "xxx";
+    public static final String CONSUMER_SECRET = "xxx";
 
     private Twitter mTwitter;
     private RequestToken mRequestToken;
