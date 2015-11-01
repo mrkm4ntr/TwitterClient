@@ -51,10 +51,13 @@ public class TwitterSyncAdapter extends AbstractThreadedSyncAdapter {
             List<User> friends = new ArrayList<>();
 
             for (Status status : statuses) {
+                User user = status.getUser();
                 ContentValues contentValues = new ContentValues();
                 contentValues.put(TwitterContract.StatusEntry._ID, status.getId());
                 contentValues.put(TwitterContract.StatusEntry.COLUMN_TEXT, status.getText());
                 contentValues.put(TwitterContract.StatusEntry.COLUMN_CREATE_AT, status.getCreatedAt().getTime());
+                contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_NAME, user.getName());
+                contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL, user.getProfileImageURL());
                 mContext.getContentResolver().insert(TwitterContract.StatusEntry.CONTENT_URI, contentValues);
             }
         } catch (Exception e) {

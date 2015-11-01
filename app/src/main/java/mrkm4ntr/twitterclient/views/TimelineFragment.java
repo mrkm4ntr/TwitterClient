@@ -27,7 +27,9 @@ public class TimelineFragment extends Fragment implements LoaderManager.LoaderCa
     private static final String[] STATUS_COLUMNS = {
             TwitterContract.StatusEntry._ID,
             TwitterContract.StatusEntry.COLUMN_TEXT,
-            TwitterContract.StatusEntry.COLUMN_CREATE_AT
+            TwitterContract.StatusEntry.COLUMN_CREATE_AT,
+            TwitterContract.StatusEntry.COLUMN_USER_NAME,
+            TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL
     };
 
     public TimelineFragment() {
