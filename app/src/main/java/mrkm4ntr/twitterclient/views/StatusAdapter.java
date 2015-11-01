@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,7 @@ import java.net.URL;
 
 import mrkm4ntr.twitterclient.R;
 import mrkm4ntr.twitterclient.data.TwitterContract;
+import mrkm4ntr.twitterclient.util.BitmapCache;
 
 public class StatusAdapter extends CursorAdapter {
 
@@ -54,21 +56,23 @@ public class StatusAdapter extends CursorAdapter {
         String text = cursor.getString(cursor.getColumnIndex(TwitterContract.StatusEntry.COLUMN_TEXT));
         viewHolder.nameView.setText(userName);
         viewHolder.textView.setText(text);
-        new UpdateImageViewTask(viewHolder.iconView).execute(profileImageUrl);
+        new UpdateImageViewTask(viewHolder.iconView, profileImageUrl).execute();
     }
 
-    public class UpdateImageViewTask extends AsyncTask<String, Void, Bitmap> {
+    public class UpdateImageViewTask extends AsyncTask<Void, Void, Bitmap> {
 
-        private ImageView mImageView;
+        private final ImageView mImageView;
+        private final String mImageUrl;
 
-        public UpdateImageViewTask(ImageView imageView) {
+        public UpdateImageViewTask(ImageView imageView, String imageUrl) {
             mImageView = imageView;
+            mImageUrl = imageUrl;
         }
 
         @Override
-        protected Bitmap doInBackground(String... params) {
+        protected Bitmap doInBackground(Void... params) {
             try {
-                InputStream input = new URL(params[0]).openStream();
+                InputStream input = new URL(mImageUrl).openStream();
                 return BitmapFactory.decodeStream(input);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -77,8 +81,18 @@ public class StatusAdapter extends CursorAdapter {
         }
 
         @Override
+        protected void onPreExecute() {
+            Bitmap bitmap = BitmapCache.getImage(mImageUrl);
+            if (bitmap != null) {
+                mImageView.setImageBitmap(bitmap);
+                cancel(true);
+            }
+        }
+
+        @Override
         protected void onPostExecute(Bitmap bitmap) {
             mImageView.setImageBitmap(bitmap);
+            BitmapCache.setImage(mImageUrl, bitmap);
         }
     }
 }
