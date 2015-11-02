@@ -65,6 +65,11 @@
             android:parentActivityName=".activities.TimelineActivity"
             android:theme="@style/AppTheme.NoActionBar" >
         </activity>
+        <activity
+            android:name=".activities.TweetActivity"
+            android:label="@string/title_activity_tweet"
+            android:theme="@style/AppTheme.NoActionBar" >
+        </activity>
     </application>
 
 </manifest>
