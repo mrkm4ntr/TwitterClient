@@ -127,7 +127,6 @@ public class TimelineFragment extends Fragment
         if (mPosition != ListView.INVALID_POSITION) {
             mListView.smoothScrollToPosition(mPosition);
             mListView.setItemChecked(mPosition, true);
-            //mListView.setSelection(mPosition);
         }
     }
 
