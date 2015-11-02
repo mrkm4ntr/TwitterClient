@@ -13,6 +13,7 @@
         android:layout_height="match_parent"
         android:id="@+id/refreshLayout_timeline">
         <ListView
+            style="@style/TimelineStyle"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/listView_timeline"/>

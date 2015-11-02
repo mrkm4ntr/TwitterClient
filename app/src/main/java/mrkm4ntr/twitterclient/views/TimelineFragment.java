@@ -32,6 +32,7 @@ public class TimelineFragment extends Fragment
 
     private ListView mListView;
     private int mPosition = ListView.INVALID_POSITION;
+    private static final String SELECTED_KEY = "selected_position";
 
     private static final int TIMELINE_LOADER = 0;
 
@@ -78,6 +79,10 @@ public class TimelineFragment extends Fragment
                 mPosition = position;
             }
         });
+
+        if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
+            mPosition = savedInstanceState.getInt(SELECTED_KEY);
+        }
         return rootView;
     }
 
@@ -92,6 +97,14 @@ public class TimelineFragment extends Fragment
         super.onResume();
         getActivity().registerReceiver(mSyncFinishedReceiver,
                 new IntentFilter(TwitterSyncAdapter.SYNC_FINISHED));
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        if (mPosition != ListView.INVALID_POSITION) {
+            outState.putInt(SELECTED_KEY, mPosition);
+        }
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -113,6 +126,8 @@ public class TimelineFragment extends Fragment
         mStatusAdapter.swapCursor(data);
         if (mPosition != ListView.INVALID_POSITION) {
             mListView.smoothScrollToPosition(mPosition);
+            mListView.setItemChecked(mPosition, true);
+            //mListView.setSelection(mPosition);
         }
     }
 
