@@ -32,7 +32,7 @@ public class TwitterSyncAdapter extends AbstractThreadedSyncAdapter {
 
     private static final String LOG_TAG = TwitterSyncAdapter.class.getSimpleName();
 
-    private static final Twitter TWITTER;
+    public static final Twitter TWITTER;
     private Context mContext;
 
     static {

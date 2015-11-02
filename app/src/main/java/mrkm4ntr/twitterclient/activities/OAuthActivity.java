@@ -13,20 +13,16 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import mrkm4ntr.twitterclient.R;
-import twitter4j.Twitter;
+import mrkm4ntr.twitterclient.sync.TwitterSyncAdapter;
 import twitter4j.TwitterException;
-import twitter4j.TwitterFactory;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
 
 public class OAuthActivity extends AppCompatActivity {
 
-    public static final String CONSUMER_KEY = "xxx";
-    public static final String CONSUMER_SECRET = "xxx";
-
-    private Twitter mTwitter;
     private RequestToken mRequestToken;
 
     @Override
@@ -38,9 +34,6 @@ public class OAuthActivity extends AppCompatActivity {
 
         final EditText pinText = (EditText) findViewById(R.id.password_pin);
         Button authButton = (Button) findViewById(R.id.button_auth);
-
-        mTwitter = TwitterFactory.getSingleton();
-        mTwitter.setOAuthConsumer(CONSUMER_KEY, CONSUMER_SECRET);
 
         authButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -65,7 +58,7 @@ public class OAuthActivity extends AppCompatActivity {
         @Override
         protected RequestToken doInBackground(Void... params) {
             try {
-                return mTwitter.getOAuthRequestToken();
+                return TwitterSyncAdapter.TWITTER.getOAuthRequestToken();
             } catch (TwitterException e) {
                 Log.d("test", e.toString());
             }
@@ -88,7 +81,7 @@ public class OAuthActivity extends AppCompatActivity {
         @Override
         protected AccessToken doInBackground(String... pin) {
             try {
-                return mTwitter.getOAuthAccessToken(mRequestToken, pin[0]);
+                return TwitterSyncAdapter.TWITTER.getOAuthAccessToken(mRequestToken, pin[0]);
             } catch (TwitterException e) {
                 Log.d("test", e.toString());
             }
@@ -98,16 +91,21 @@ public class OAuthActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(AccessToken accessToken) {
             super.onPostExecute(accessToken);
-            mTwitter.setOAuthAccessToken(accessToken);
-            Context context = getApplicationContext();
-            String type = context.getString(R.string.sync_account_type);
-            Account account = new Account(context.getString(R.string.app_name), type);
-            AccountManager accountManager = AccountManager.get(getApplication());
-            //accountManager.addAccountExplicitly(account, accessToken.getTokenSecret(), Bundle.EMPTY);
-            accountManager.setPassword(account, accessToken.getTokenSecret());
-            accountManager.setAuthToken(account, type, accessToken.getToken());
-            setResult(RESULT_OK);
-            finish();
+            if (accessToken != null) {
+                TwitterSyncAdapter.TWITTER.setOAuthAccessToken(accessToken);
+                Context context = getApplicationContext();
+                String type = context.getString(R.string.sync_account_type);
+                Account account = new Account(context.getString(R.string.app_name), type);
+                AccountManager accountManager = AccountManager.get(getApplication());
+                //accountManager.addAccountExplicitly(account, accessToken.getTokenSecret(), Bundle.EMPTY);
+
+                accountManager.setPassword(account, accessToken.getTokenSecret());
+                accountManager.setAuthToken(account, type, accessToken.getToken());
+                setResult(RESULT_OK);
+                finish();
+            } else {
+                Toast.makeText(getApplicationContext(), "認証できませんでした", Toast.LENGTH_LONG);
+            }
         }
     }
 

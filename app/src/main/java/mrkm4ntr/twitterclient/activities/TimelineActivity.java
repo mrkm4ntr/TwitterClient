@@ -12,7 +12,6 @@ import android.view.MenuItem;
 import android.view.View;
 
 import mrkm4ntr.twitterclient.R;
-import mrkm4ntr.twitterclient.sync.TwitterSyncAdapter;
 import mrkm4ntr.twitterclient.views.DetailFragment;
 import mrkm4ntr.twitterclient.views.TimelineFragment;
 
@@ -45,15 +44,6 @@ public class TimelineActivity extends AppCompatActivity implements TimelineFragm
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                TwitterSyncAdapter.syncImmediately(getApplicationContext());
-                /*Context context = getApplicationContext();
-                try {
-                    Account account = new Account(context.getString(R.string.app_name), context.getString(R.string.sync_account_type));
-                    AccountManager.get(context).getAuthToken(account, context.getString(R.string
-                            .sync_account_type), new Bundle(), false, null, null);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }*/
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
