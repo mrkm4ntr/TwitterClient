@@ -7,6 +7,7 @@ import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SyncResult;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mrkm4ntr.twitterclient.R;
-import mrkm4ntr.twitterclient.activities.OAuthActivity;
 import mrkm4ntr.twitterclient.data.TwitterContract;
 import twitter4j.Status;
 import twitter4j.Twitter;
@@ -25,9 +25,20 @@ import twitter4j.auth.AccessToken;
 
 public class TwitterSyncAdapter extends AbstractThreadedSyncAdapter {
 
+    private static final String CONSUMER_KEY = "xxx";
+    private static final String CONSUMER_SECRET = "xxx";
+
+    public static final String SYNC_FINISHED = "SyncFinished";
+
     private static final String LOG_TAG = TwitterSyncAdapter.class.getSimpleName();
 
+    private static final Twitter TWITTER;
     private Context mContext;
+
+    static {
+        TWITTER = TwitterFactory.getSingleton();
+        TWITTER.setOAuthConsumer(CONSUMER_KEY, CONSUMER_SECRET);
+    }
 
     public TwitterSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
@@ -39,15 +50,13 @@ public class TwitterSyncAdapter extends AbstractThreadedSyncAdapter {
             Account account, Bundle bundle, String s, ContentProviderClient
             contentProviderClient, SyncResult syncResult) {
         Log.d(LOG_TAG, "Starting sync");
-        Twitter twitter = TwitterFactory.getSingleton();
-        twitter.setOAuthConsumer(OAuthActivity.CONSUMER_KEY, OAuthActivity.CONSUMER_SECRET);
         AccountManager accountManager = AccountManager.get(mContext);
 
         try {
             String token = accountManager.blockingGetAuthToken(account, mContext.getString(R.string.sync_account_type), true);
             String tokenSecret = accountManager.getPassword(account);
-            twitter.setOAuthAccessToken(new AccessToken(token, tokenSecret));
-            List<Status> statuses = twitter.getHomeTimeline();
+            TWITTER.setOAuthAccessToken(new AccessToken(token, tokenSecret));
+            List<Status> statuses = TWITTER.getHomeTimeline();
             List<User> friends = new ArrayList<>();
 
             for (Status status : statuses) {
@@ -64,6 +73,8 @@ public class TwitterSyncAdapter extends AbstractThreadedSyncAdapter {
             e.printStackTrace();
         }
         // TODO HTTP access and call bulkInsert.
+        mContext.sendBroadcast(new Intent(SYNC_FINISHED));
+
     }
 
     public static void syncImmediately(Context context) {
