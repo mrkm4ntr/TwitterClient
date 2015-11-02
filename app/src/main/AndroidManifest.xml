@@ -37,17 +37,18 @@
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
+
             <meta-data
                 android:name="android.accounts.AccountAuthenticator"
                 android:resource="@xml/authenticator" />
         </service>
-
         <service
             android:name=".sync.TwitterSyncService"
             android:exported="true" >
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>
+
             <meta-data
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/syncadapter" />
@@ -56,6 +57,11 @@
         <activity
             android:name=".activities.OAuthActivity"
             android:label="@string/title_activity_oauth"
+            android:theme="@style/AppTheme.NoActionBar" >
+        </activity>
+        <activity
+            android:name=".activities.DetailActivity"
+            android:label="@string/title_activity_detail"
             android:theme="@style/AppTheme.NoActionBar" >
         </activity>
     </application>

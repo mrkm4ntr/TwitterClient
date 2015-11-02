@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -14,6 +15,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import mrkm4ntr.twitterclient.R;
@@ -48,6 +50,10 @@ public class TimelineFragment extends Fragment
         }
     };
 
+    public interface Callback {
+        public void onItemSelected(Uri uri);
+    }
+
     public TimelineFragment() {
     }
 
@@ -60,8 +66,18 @@ public class TimelineFragment extends Fragment
         mSwipeRefreshLayout.setOnRefreshListener(this);
         mListView = (ListView) rootView.findViewById(R.id.listView_timeline);
         mListView.setAdapter(mStatusAdapter);
-
-        // TODO add itemClickListener
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
+                if (cursor != null) {
+                    ((Callback) getActivity()).onItemSelected(
+                            TwitterContract.StatusEntry.buildStatusUri(cursor.getLong(
+                                    cursor.getColumnIndex(TwitterContract.StatusEntry._ID))));
+                }
+                mPosition = position;
+            }
+        });
         return rootView;
     }
 

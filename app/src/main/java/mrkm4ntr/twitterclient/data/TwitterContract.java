@@ -31,7 +31,7 @@ public class TwitterContract {
         public static final String COLUMN_USER_NAME = "user_name";
         public static final String COLUMN_USER_PROFILE_IMAGE_URL = "user_profile_image_url";
 
-        public static Uri buildUserUri(long id) {
+        public static Uri buildStatusUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
     }

@@ -6,4 +6,5 @@
     <string name="sync_account_type">twitterclient.mrkm4ntr</string>
     <string name="content_authority">mrkm4ntr.twitterclient</string>
     <string name="title_activity_oauth">OAuthActivity</string>
+    <string name="title_activity_detail">DetailActivity</string>
 </resources>

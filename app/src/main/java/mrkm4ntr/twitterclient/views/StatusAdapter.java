@@ -56,7 +56,7 @@ public class StatusAdapter extends CursorAdapter {
         new UpdateImageViewTask(viewHolder.iconView, profileImageUrl).execute();
     }
 
-    public class UpdateImageViewTask extends AsyncTask<Void, Void, Bitmap> {
+    public static class UpdateImageViewTask extends AsyncTask<Void, Void, Bitmap> {
 
         private final ImageView mImageView;
         private final String mImageUrl;

@@ -23,6 +23,7 @@ public class TwitterProvider extends ContentProvider {
         UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
         String authority = TwitterContract.CONTENT_AUTHORITY;
         matcher.addURI(authority, TwitterContract.PATH_STATUS, STATUS);
+        matcher.addURI(authority, TwitterContract.PATH_STATUS + "/*", STATUS_WITH_ID);
         // TODO implement
         return matcher;
     }
@@ -45,6 +46,13 @@ public class TwitterProvider extends ContentProvider {
                         selectionArgs, null, null, sortOrder);
                 break;
             }
+            case STATUS_WITH_ID: {
+                cursor = mOpenHelper.getReadableDatabase().query(
+                        TwitterContract.StatusEntry.TABLE_NAME, projection,
+                        TwitterContract.StatusEntry._ID + " = ? ",
+                        new String[]{ uri.getPathSegments().get(1) }, null, null, sortOrder);
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri:" + uri);
         }
@@ -58,6 +66,8 @@ public class TwitterProvider extends ContentProvider {
         switch (URI_MATCHER.match(uri)) {
             case STATUS:
                 return TwitterContract.StatusEntry.CONTENT_TYPE;
+            case STATUS_WITH_ID:
+                return TwitterContract.StatusEntry.CONTENT_ITEM_TYPE;
             case USER_WITH_ID:
                 return TwitterContract.UserEntry.CONTENT_ITEM_TYPE;
             // TODO implement
@@ -77,7 +87,7 @@ public class TwitterProvider extends ContentProvider {
             case STATUS: {
                 long _id = db.insert(TwitterContract.StatusEntry.TABLE_NAME, null, contentValues);
                 if (_id > 0) {
-                    returnUri = TwitterContract.StatusEntry.buildUserUri(_id);
+                    returnUri = TwitterContract.StatusEntry.buildStatusUri(_id);
                 } else {
                     throw new SQLException("Failed to insert row into " + uri);
                 }
