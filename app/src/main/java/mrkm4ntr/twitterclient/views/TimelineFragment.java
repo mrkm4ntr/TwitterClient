@@ -51,6 +51,13 @@ public class TimelineFragment extends Fragment
         }
     };
 
+    private BroadcastReceiver mTimeTickReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            mStatusAdapter.notifyDataSetChanged();
+        }
+    };
+
     public interface Callback {
         public void onItemSelected(Uri uri);
     }
@@ -80,6 +87,7 @@ public class TimelineFragment extends Fragment
             }
         });
 
+
         if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
             mPosition = savedInstanceState.getInt(SELECTED_KEY);
         }
@@ -95,8 +103,10 @@ public class TimelineFragment extends Fragment
     @Override
     public void onResume() {
         super.onResume();
-        getActivity().registerReceiver(mSyncFinishedReceiver,
+        Context context = getActivity();
+        context.registerReceiver(mSyncFinishedReceiver,
                 new IntentFilter(TwitterSyncAdapter.SYNC_FINISHED));
+        context.registerReceiver(mTimeTickReceiver, new IntentFilter(Intent.ACTION_TIME_TICK));
     }
 
     @Override
@@ -110,7 +120,9 @@ public class TimelineFragment extends Fragment
     @Override
     public void onPause() {
         super.onPause();
-        getActivity().unregisterReceiver(mSyncFinishedReceiver);
+        Context context = getActivity();
+        context.unregisterReceiver(mSyncFinishedReceiver);
+        context.unregisterReceiver(mTimeTickReceiver);
     }
 
     @Override

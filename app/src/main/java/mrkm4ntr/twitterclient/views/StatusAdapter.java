@@ -14,10 +14,12 @@ import android.widget.TextView;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Date;
 
 import mrkm4ntr.twitterclient.R;
 import mrkm4ntr.twitterclient.data.TwitterContract;
 import mrkm4ntr.twitterclient.util.BitmapCache;
+import mrkm4ntr.twitterclient.util.Utility;
 
 public class StatusAdapter extends CursorAdapter {
 
@@ -25,11 +27,13 @@ public class StatusAdapter extends CursorAdapter {
         public final ImageView iconView;
         public final TextView nameView;
         public final TextView textView;
+        public final TextView createdAtView;
 
         public ViewHolder(View view) {
             iconView = (ImageView) view.findViewById(R.id.list_item_icon);
             nameView = (TextView) view.findViewById(R.id.list_item_name_textview);
             textView = (TextView) view.findViewById(R.id.list_item_text_textview);
+            createdAtView = (TextView) view.findViewById(R.id.list_item_createdAt);
         }
     }
 
@@ -51,8 +55,10 @@ public class StatusAdapter extends CursorAdapter {
         String profileImageUrl = cursor.getString(cursor.getColumnIndex(TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL));
         String userName = cursor.getString(cursor.getColumnIndex(TwitterContract.StatusEntry.COLUMN_USER_NAME));
         String text = cursor.getString(cursor.getColumnIndex(TwitterContract.StatusEntry.COLUMN_TEXT));
+        long createdAt = cursor.getLong(cursor.getColumnIndex(TwitterContract.StatusEntry.COLUMN_CREATE_AT));
         viewHolder.nameView.setText(userName);
         viewHolder.textView.setText(text);
+        viewHolder.createdAtView.setText(Utility.datetimeAgo(new Date(createdAt)));
         new UpdateImageViewTask(viewHolder.iconView, profileImageUrl).execute();
     }
 
@@ -92,4 +98,5 @@ public class StatusAdapter extends CursorAdapter {
             BitmapCache.setImage(mImageUrl, bitmap);
         }
     }
+
 }
