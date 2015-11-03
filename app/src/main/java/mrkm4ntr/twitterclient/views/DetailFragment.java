@@ -74,11 +74,13 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_detail_fragment, menu);
-        MenuItem menuItem = menu.findItem(R.id.action_share);
-        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
-        if (mStatus != null) {
-            mShareActionProvider.setShareIntent(createShareStatusIntent());
+        if (this.isVisible()) {
+            inflater.inflate(R.menu.menu_detail_fragment, menu);
+            MenuItem menuItem = menu.findItem(R.id.action_share);
+            mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+            if (mStatus != null) {
+                mShareActionProvider.setShareIntent(createShareStatusIntent());
+            }
         }
     }
 
