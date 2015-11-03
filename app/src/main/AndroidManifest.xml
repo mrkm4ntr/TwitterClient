@@ -68,7 +68,9 @@
         <activity
             android:name=".activities.TweetActivity"
             android:label="@string/title_activity_tweet"
-            android:theme="@style/AppTheme.NoActionBar" >
+            android:theme="@style/AppTheme.NoActionBar"
+            android:parentActivityName=".activities.TimelineActivity"
+            android:windowSoftInputMode="adjustResize">
         </activity>
     </application>
 
