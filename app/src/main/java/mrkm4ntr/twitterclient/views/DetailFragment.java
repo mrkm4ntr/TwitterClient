@@ -1,5 +1,6 @@
 package mrkm4ntr.twitterclient.views;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -7,7 +8,12 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.ShareActionProvider;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -21,6 +27,10 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     private static final String LOG_TAG = DetailFragment.class.getSimpleName();
     public static final String DETAIL_URI = "URI";
 
+    private static final String STATUS_SHARE_HASHTAG = "#TwitterClient";
+
+    private ShareActionProvider mShareActionProvider;
+    private String mStatus;
     private Uri mUri;
 
     private static final int DETAIL_LOADER = 0;
@@ -38,6 +48,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     private TextView mTextView;
 
     public DetailFragment() {
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -62,6 +73,24 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_detail_fragment, menu);
+        MenuItem menuItem = menu.findItem(R.id.action_share);
+        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+        if (mStatus != null) {
+            mShareActionProvider.setShareIntent(createShareStatusIntent());
+        }
+    }
+
+    private Intent createShareStatusIntent() {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_TEXT, mStatus + STATUS_SHARE_HASHTAG);
+        return intent;
+    }
+
+    @Override
     public Loader onCreateLoader(int id, Bundle args) {
         if (mUri != null) {
             return new CursorLoader(getActivity(), mUri, DETAIL_COLUMNS, null, null, null);
@@ -79,6 +108,11 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             mNameView.setText(name);
             String text = data.getString(data.getColumnIndex(TwitterContract.StatusEntry.COLUMN_TEXT));
             mTextView.setText(text);
+            mStatus = text;
+
+            if (mShareActionProvider != null) {
+                mShareActionProvider.setShareIntent(createShareStatusIntent());
+            }
         }
     }
 
