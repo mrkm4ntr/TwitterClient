@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -19,6 +20,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import mrkm4ntr.twitterclient.R;
+import mrkm4ntr.twitterclient.activities.OAuthActivity;
 import mrkm4ntr.twitterclient.data.TwitterContract;
 import mrkm4ntr.twitterclient.sync.TwitterSyncAdapter;
 
@@ -48,6 +50,13 @@ public class TimelineFragment extends Fragment
         @Override
         public void onReceive(Context context, Intent intent) {
             mSwipeRefreshLayout.setRefreshing(false);
+            if (!intent.getBooleanExtra(TwitterSyncAdapter.EXTRA_SUCCEEDED, false)) {
+                Snackbar.make(mListView, context.getString(R.string.message_error_sync),
+                        Snackbar.LENGTH_SHORT).show();
+                if (intent.getBooleanExtra(TwitterSyncAdapter.EXTRA_JUMP, false)) {
+                    startActivity(new Intent(context, OAuthActivity.class));
+                }
+            }
         }
     };
 
@@ -107,6 +116,7 @@ public class TimelineFragment extends Fragment
         context.registerReceiver(mSyncFinishedReceiver,
                 new IntentFilter(TwitterSyncAdapter.SYNC_FINISHED));
         context.registerReceiver(mTimeTickReceiver, new IntentFilter(Intent.ACTION_TIME_TICK));
+        //TwitterSyncAdapter.syncImmediately(context);
     }
 
     @Override

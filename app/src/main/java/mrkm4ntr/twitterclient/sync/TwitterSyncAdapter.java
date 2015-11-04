@@ -2,6 +2,8 @@ package mrkm4ntr.twitterclient.sync;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.accounts.AuthenticatorException;
+import android.accounts.OperationCanceledException;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
@@ -12,13 +14,14 @@ import android.content.SyncResult;
 import android.os.Bundle;
 import android.util.Log;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
 
 import mrkm4ntr.twitterclient.R;
 import mrkm4ntr.twitterclient.data.TwitterContract;
 import twitter4j.Status;
 import twitter4j.Twitter;
+import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.User;
 import twitter4j.auth.AccessToken;
@@ -29,6 +32,8 @@ public class TwitterSyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String CONSUMER_SECRET = "xxx";
 
     public static final String SYNC_FINISHED = "SyncFinished";
+    public static final String EXTRA_SUCCEEDED = "SUCCEEDED";
+    public static final String EXTRA_JUMP = "JUMP";
 
     private static final String LOG_TAG = TwitterSyncAdapter.class.getSimpleName();
 
@@ -51,29 +56,39 @@ public class TwitterSyncAdapter extends AbstractThreadedSyncAdapter {
             contentProviderClient, SyncResult syncResult) {
         Log.d(LOG_TAG, "Starting sync");
         AccountManager accountManager = AccountManager.get(mContext);
+        Intent intent = new Intent(SYNC_FINISHED);
 
         try {
             String token = accountManager.blockingGetAuthToken(account, mContext.getString(R.string.sync_account_type), true);
             String tokenSecret = accountManager.getPassword(account);
-            TWITTER.setOAuthAccessToken(new AccessToken(token, tokenSecret));
-            List<Status> statuses = TWITTER.getHomeTimeline();
-            List<User> friends = new ArrayList<>();
+            if (token != null && tokenSecret != null) {
+                TWITTER.setOAuthAccessToken(new AccessToken(token, tokenSecret));
+                List<Status> statuses = TWITTER.getHomeTimeline();
 
-            for (Status status : statuses) {
-                User user = status.getUser();
-                ContentValues contentValues = new ContentValues();
-                contentValues.put(TwitterContract.StatusEntry._ID, status.getId());
-                contentValues.put(TwitterContract.StatusEntry.COLUMN_TEXT, status.getText());
-                contentValues.put(TwitterContract.StatusEntry.COLUMN_CREATE_AT, status.getCreatedAt().getTime());
-                contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_NAME, user.getName());
-                contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL, user.getProfileImageURL());
-                mContext.getContentResolver().insert(TwitterContract.StatusEntry.CONTENT_URI, contentValues);
+                for (Status status : statuses) {
+                    ContentResolver resolver = mContext.getContentResolver();
+                    User user = status.getUser();
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put(TwitterContract.StatusEntry._ID, status.getId());
+                    contentValues.put(TwitterContract.StatusEntry.COLUMN_TEXT, status.getText());
+                    contentValues.put(TwitterContract.StatusEntry.COLUMN_CREATE_AT, status.getCreatedAt().getTime());
+                    contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_NAME, user.getName());
+                    contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL, user.getProfileImageURL());
+                    resolver.insert(TwitterContract.StatusEntry.CONTENT_URI, contentValues);
+                }
+                intent.putExtra(EXTRA_SUCCEEDED, true);
+            } else {
+                intent.putExtra(EXTRA_JUMP, true);
             }
+        } catch (AuthenticatorException e) {
+            Log.d(LOG_TAG, e.toString());
+            intent.putExtra(EXTRA_JUMP, true);
+        } catch (OperationCanceledException | IOException | TwitterException e) {
+            Log.d(LOG_TAG, e.toString());
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.d(LOG_TAG, e.toString());
         }
-        // TODO HTTP access and call bulkInsert.
-        mContext.sendBroadcast(new Intent(SYNC_FINISHED));
+        mContext.sendBroadcast(intent);
 
     }
 

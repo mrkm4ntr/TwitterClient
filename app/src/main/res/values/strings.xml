@@ -8,4 +8,8 @@
     <string name="title_activity_oauth">OAuthActivity</string>
     <string name="title_activity_detail">DetailActivity</string>
     <string name="title_activity_tweet">TweetActivity</string>
+
+    <string name="message_error_requestToken">Request Tokenの取得に失敗しました</string>
+    <string name="message_error_sync">通信に失敗しました</string>
+    <string name="message_error_auth">認証できませんでした</string>
 </resources>

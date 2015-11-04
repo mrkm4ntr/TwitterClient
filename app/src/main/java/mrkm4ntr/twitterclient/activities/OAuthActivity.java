@@ -7,23 +7,26 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import mrkm4ntr.twitterclient.R;
 import mrkm4ntr.twitterclient.sync.TwitterSyncAdapter;
-import twitter4j.TwitterException;
+import twitter4j.Twitter;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
 
 public class OAuthActivity extends AppCompatActivity {
 
+    private static final String LOG_TAG = OAuthActivity.class.getSimpleName();
+
     private RequestToken mRequestToken;
+    private View mView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +34,7 @@ public class OAuthActivity extends AppCompatActivity {
         setContentView(R.layout.activity_oauth);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        mView = findViewById(R.id.oauth_layout);
 
         final EditText pinText = (EditText) findViewById(R.id.password_pin);
         Button authButton = (Button) findViewById(R.id.button_auth);
@@ -39,7 +43,7 @@ public class OAuthActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String pin = pinText.getText().toString();
-                new GetAccessTokenTask().execute(pin);
+                new GetAccessTokenTask(pin).execute();
             }
         });
 
@@ -58,9 +62,11 @@ public class OAuthActivity extends AppCompatActivity {
         @Override
         protected RequestToken doInBackground(Void... params) {
             try {
-                return TwitterSyncAdapter.TWITTER.getOAuthRequestToken();
-            } catch (TwitterException e) {
-                Log.d("test", e.toString());
+                Twitter twitter = TwitterSyncAdapter.TWITTER;
+                twitter.setOAuthAccessToken(null);
+                return twitter.getOAuthRequestToken();
+            } catch (Exception e) {
+                Log.d(LOG_TAG, e.toString());
             }
             return null;
         }
@@ -68,22 +74,32 @@ public class OAuthActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(RequestToken requestToken) {
             super.onPostExecute(requestToken);
-            mRequestToken = requestToken;
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(requestToken
-                    .getAuthorizationURL())));
+            if (requestToken != null) {
+                mRequestToken = requestToken;
+                startActivity(new Intent(
+                        Intent.ACTION_VIEW, Uri.parse(requestToken.getAuthorizationURL())));
+            } else {
+                Snackbar.make(mView,
+                        getApplicationContext().getString(R.string.message_error_requestToken),
+                        Snackbar.LENGTH_SHORT).show();
+            }
         }
     }
 
-    public class GetAccessTokenTask extends AsyncTask<String, Void, AccessToken> {
+    public class GetAccessTokenTask extends AsyncTask<Void, Void, AccessToken> {
 
-        EditText pin = (EditText) findViewById(R.id.password_pin);
+        private final String mPin;
+
+        public GetAccessTokenTask(String pin) {
+            mPin = pin;
+        }
 
         @Override
-        protected AccessToken doInBackground(String... pin) {
+        protected AccessToken doInBackground(Void... params) {
             try {
-                return TwitterSyncAdapter.TWITTER.getOAuthAccessToken(mRequestToken, pin[0]);
-            } catch (TwitterException e) {
-                Log.d("test", e.toString());
+                return TwitterSyncAdapter.TWITTER.getOAuthAccessToken(mRequestToken, mPin);
+            } catch (Exception e) {
+                Log.d(LOG_TAG, e.toString());
             }
             return null;
         }
@@ -104,7 +120,9 @@ public class OAuthActivity extends AppCompatActivity {
                 setResult(RESULT_OK);
                 finish();
             } else {
-                Toast.makeText(getApplicationContext(), "認証できませんでした", Toast.LENGTH_LONG);
+                Snackbar.make(mView,
+                        getApplicationContext().getString(R.string.message_error_auth),
+                        Snackbar.LENGTH_SHORT).show();
             }
         }
     }

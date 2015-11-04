@@ -14,7 +14,7 @@ public class TwitterDbHelper extends SQLiteOpenHelper {
     }
 
     private static final String SQL_CREATE_STATUS_TABLE =
-            String.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY, %s TEXT NOT NULL, %s INTEGER NOT NULL, %s TEXT NOT NULL, %s TEXT NOT NULL)",
+            String.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY ON CONFLICT REPLACE, %s TEXT NOT NULL, %s INTEGER NOT NULL, %s TEXT NOT NULL, %s TEXT NOT NULL)",
                     TwitterContract.StatusEntry.TABLE_NAME, TwitterContract.StatusEntry._ID,
                     TwitterContract.StatusEntry.COLUMN_CREATE_AT,
                     TwitterContract.StatusEntry.COLUMN_TEXT,
@@ -23,13 +23,11 @@ public class TwitterDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        // TODO initialize DB
         sqLiteDatabase.execSQL(SQL_CREATE_STATUS_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-        // TODO insert table name
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TwitterContract.StatusEntry.TABLE_NAME);
         onCreate(sqLiteDatabase);
     }
