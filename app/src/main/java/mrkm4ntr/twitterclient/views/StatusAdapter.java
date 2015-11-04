@@ -52,11 +52,17 @@ public class StatusAdapter extends CursorAdapter {
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         ViewHolder viewHolder = (ViewHolder) view.getTag();
-        String profileImageUrl = cursor.getString(cursor.getColumnIndex(TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL));
-        String userName = cursor.getString(cursor.getColumnIndex(TwitterContract.StatusEntry.COLUMN_USER_NAME));
-        String text = cursor.getString(cursor.getColumnIndex(TwitterContract.StatusEntry.COLUMN_TEXT));
-        long createdAt = cursor.getLong(cursor.getColumnIndex(TwitterContract.StatusEntry.COLUMN_CREATE_AT));
-        viewHolder.nameView.setText(userName);
+        String profileImageUrl = cursor.getString(cursor.getColumnIndex(
+                TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL));
+        String userName = cursor.getString(cursor.getColumnIndex(
+                TwitterContract.StatusEntry.COLUMN_USER_NAME));
+        String screenName = cursor.getString(cursor.getColumnIndex(
+                TwitterContract.StatusEntry.COLUMN_USER_SCREEN_NAME));
+        String text = cursor.getString(cursor.getColumnIndex(
+                TwitterContract.StatusEntry.COLUMN_TEXT));
+        long createdAt = cursor.getLong(cursor.getColumnIndex(
+                TwitterContract.StatusEntry.COLUMN_CREATE_AT));
+        viewHolder.nameView.setText(userName + "@" + screenName);
         viewHolder.textView.setText(text);
         viewHolder.createdAtView.setText(Utility.datetimeAgo(new Date(createdAt)));
         new UpdateImageViewTask(viewHolder.iconView, profileImageUrl).execute();

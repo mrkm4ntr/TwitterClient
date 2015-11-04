@@ -43,7 +43,8 @@ public class TimelineFragment extends Fragment
             TwitterContract.StatusEntry.COLUMN_TEXT,
             TwitterContract.StatusEntry.COLUMN_CREATE_AT,
             TwitterContract.StatusEntry.COLUMN_USER_NAME,
-            TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL
+            TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL,
+            TwitterContract.StatusEntry.COLUMN_USER_SCREEN_NAME
     };
 
     private BroadcastReceiver mSyncFinishedReceiver = new BroadcastReceiver() {

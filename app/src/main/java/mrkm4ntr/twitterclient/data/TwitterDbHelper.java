@@ -14,12 +14,24 @@ public class TwitterDbHelper extends SQLiteOpenHelper {
     }
 
     private static final String SQL_CREATE_STATUS_TABLE =
-            String.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY ON CONFLICT REPLACE, %s TEXT NOT NULL, %s INTEGER NOT NULL, %s TEXT NOT NULL, %s TEXT NOT NULL)",
-                    TwitterContract.StatusEntry.TABLE_NAME, TwitterContract.StatusEntry._ID,
+            String.format("CREATE TABLE %s (" +
+                            "%s INTEGER PRIMARY KEY ON CONFLICT REPLACE," +
+                            "%s TEXT NOT NULL," +
+                            "%s INTEGER NOT NULL," +
+                            "%s TEXT NOT NULL," +
+                            "%s TEXT NOT NULL," +
+                            "%s TEXT NOT NULL," +
+                            "%s TEXT NOT NULL," +
+                            "%s TEXT NOT NULL)",
+                    TwitterContract.StatusEntry.TABLE_NAME,
+                    TwitterContract.StatusEntry._ID,
                     TwitterContract.StatusEntry.COLUMN_CREATE_AT,
                     TwitterContract.StatusEntry.COLUMN_TEXT,
                     TwitterContract.StatusEntry.COLUMN_USER_NAME,
-                    TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL);
+                    TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL,
+                    TwitterContract.StatusEntry.COLUMN_USER_SCREEN_NAME,
+                    TwitterContract.StatusEntry.COLUMN_USER_LOCATION,
+                    TwitterContract.StatusEntry.COLUMN_USER_BIO);
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {

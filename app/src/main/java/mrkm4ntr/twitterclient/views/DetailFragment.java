@@ -39,12 +39,17 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             TwitterContract.StatusEntry._ID,
             TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL,
             TwitterContract.StatusEntry.COLUMN_USER_NAME,
-            TwitterContract.StatusEntry.COLUMN_TEXT
+            TwitterContract.StatusEntry.COLUMN_USER_SCREEN_NAME,
+            TwitterContract.StatusEntry.COLUMN_TEXT,
+            TwitterContract.StatusEntry.COLUMN_USER_LOCATION,
+            TwitterContract.StatusEntry.COLUMN_USER_BIO
     };
 
     private ImageView mIconView;
     private TextView mNameView;
     private TextView mScreenNameView;
+    private TextView mLocationView;
+    private TextView mBioView;
     private TextView mTextView;
 
     public DetailFragment() {
@@ -62,6 +67,8 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         mIconView = (ImageView) rootView.findViewById(R.id.detail_icon);
         mNameView = (TextView) rootView.findViewById(R.id.detail_name_textView);
         mScreenNameView = (TextView) rootView.findViewById(R.id.detail_screenName_textView);
+        mLocationView = (TextView) rootView.findViewById(R.id.detail_userLocation_textView);
+        mBioView = (TextView) rootView.findViewById(R.id.detail_userBio_textView);
         mTextView = (TextView) rootView.findViewById(R.id.detail_text_textView);
         return rootView;
     }
@@ -106,9 +113,20 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             String profileImageUrl = data.getString(data.getColumnIndex(
                     TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL));
             new StatusAdapter.UpdateImageViewTask(mIconView, profileImageUrl).execute();
-            String name = data.getString(data.getColumnIndex(TwitterContract.StatusEntry.COLUMN_USER_NAME));
+            String name = data.getString(data.getColumnIndex(
+                    TwitterContract.StatusEntry.COLUMN_USER_NAME));
             mNameView.setText(name);
-            String text = data.getString(data.getColumnIndex(TwitterContract.StatusEntry.COLUMN_TEXT));
+            String screenName = data.getString(data.getColumnIndex(
+                    TwitterContract.StatusEntry.COLUMN_USER_SCREEN_NAME));
+            mScreenNameView.setText(screenName);
+            String location = data.getString(data.getColumnIndex(
+                    TwitterContract.StatusEntry.COLUMN_USER_LOCATION));
+            mLocationView.setText(location);
+            String bio = data.getString(data.getColumnIndex(
+                    TwitterContract.StatusEntry.COLUMN_USER_BIO));
+            mBioView.setText(bio);
+            String text = data.getString(data.getColumnIndex(
+                    TwitterContract.StatusEntry.COLUMN_TEXT));
             mTextView.setText(text);
             mStatus = text;
 

@@ -71,9 +71,17 @@ public class TwitterSyncAdapter extends AbstractThreadedSyncAdapter {
                     ContentValues contentValues = new ContentValues();
                     contentValues.put(TwitterContract.StatusEntry._ID, status.getId());
                     contentValues.put(TwitterContract.StatusEntry.COLUMN_TEXT, status.getText());
-                    contentValues.put(TwitterContract.StatusEntry.COLUMN_CREATE_AT, status.getCreatedAt().getTime());
+                    contentValues.put(TwitterContract.StatusEntry.COLUMN_CREATE_AT,
+                            status.getCreatedAt().getTime());
                     contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_NAME, user.getName());
-                    contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL, user.getProfileImageURL());
+                    contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL,
+                            user.getProfileImageURL());
+                    contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_SCREEN_NAME,
+                            user.getScreenName());
+                    contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_LOCATION,
+                            user.getLocation());
+                    contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_BIO,
+                            user.getDescription());
                     resolver.insert(TwitterContract.StatusEntry.CONTENT_URI, contentValues);
                 }
                 intent.putExtra(EXTRA_SUCCEEDED, true);
