@@ -16,15 +16,12 @@ public class TwitterProvider extends ContentProvider {
 
     private static final int STATUS = 100;
     private static final int STATUS_WITH_ID = 101;
-    private static final int USER = 200;
-    private static final int USER_WITH_ID = 201;
 
     private static UriMatcher buildUriMatcher() {
         UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
         String authority = TwitterContract.CONTENT_AUTHORITY;
         matcher.addURI(authority, TwitterContract.PATH_STATUS, STATUS);
         matcher.addURI(authority, TwitterContract.PATH_STATUS + "/*", STATUS_WITH_ID);
-        // TODO implement
         return matcher;
     }
 
@@ -68,9 +65,6 @@ public class TwitterProvider extends ContentProvider {
                 return TwitterContract.StatusEntry.CONTENT_TYPE;
             case STATUS_WITH_ID:
                 return TwitterContract.StatusEntry.CONTENT_ITEM_TYPE;
-            case USER_WITH_ID:
-                return TwitterContract.UserEntry.CONTENT_ITEM_TYPE;
-            // TODO implement
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -93,15 +87,6 @@ public class TwitterProvider extends ContentProvider {
                 }
                 break;
             }
-            case USER: {
-                long _id = db.insert(TwitterContract.UserEntry.TABLE_NAME, null, contentValues);
-                if (_id > 0) {
-                    returnUri = TwitterContract.UserEntry.buildUserUri(_id);
-                } else {
-                    throw new SQLException("Failed to insert row into " + uri);
-                }
-                break;
-            }
             default:
                 throw  new UnsupportedOperationException("Unknown uri:" + uri);
         }
@@ -114,12 +99,12 @@ public class TwitterProvider extends ContentProvider {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = URI_MATCHER.match(uri);
         switch (match) {
-            case USER:
+            case STATUS:
                 db.beginTransaction();
                 int returnCount = 0;
                 try {
                     for (ContentValues value : values) {
-                        long id = db.insert(TwitterContract.UserEntry.TABLE_NAME, null, value);
+                        long id = db.insert(TwitterContract.StatusEntry.TABLE_NAME, null, value);
                         if (id != -1) {
                             returnCount++;
                         }
