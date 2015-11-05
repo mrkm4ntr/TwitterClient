@@ -2,8 +2,10 @@ package mrkm4ntr.twitterclient.activities;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SyncRequest;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -88,6 +90,9 @@ public class OAuthActivity extends AppCompatActivity {
 
     public class GetAccessTokenTask extends AsyncTask<Void, Void, AccessToken> {
 
+        private static final int SYNC_INTERVAL = 60 * 60;
+        private static final int FLEX_TIME = SYNC_INTERVAL / 3;
+
         private final String mPin;
 
         public GetAccessTokenTask(String pin) {
@@ -113,10 +118,13 @@ public class OAuthActivity extends AppCompatActivity {
                 String type = context.getString(R.string.sync_account_type);
                 Account account = new Account(context.getString(R.string.app_name), type);
                 AccountManager accountManager = AccountManager.get(getApplication());
-                //accountManager.addAccountExplicitly(account, accessToken.getTokenSecret(), Bundle.EMPTY);
-
                 accountManager.setPassword(account, accessToken.getTokenSecret());
                 accountManager.setAuthToken(account, type, accessToken.getToken());
+                SyncRequest request = new SyncRequest.Builder()
+                        .syncPeriodic(SYNC_INTERVAL, FLEX_TIME)
+                        .setSyncAdapter(account, getString(R.string.content_authority))
+                        .setExtras(new Bundle()).build();
+                ContentResolver.requestSync(request);
                 setResult(RESULT_OK);
                 finish();
             } else {

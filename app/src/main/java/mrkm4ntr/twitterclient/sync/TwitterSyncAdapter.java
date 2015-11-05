@@ -59,7 +59,8 @@ public class TwitterSyncAdapter extends AbstractThreadedSyncAdapter {
         Intent intent = new Intent(SYNC_FINISHED);
 
         try {
-            String token = accountManager.blockingGetAuthToken(account, mContext.getString(R.string.sync_account_type), true);
+            String token = accountManager.blockingGetAuthToken(account,
+                    mContext.getString(R.string.sync_account_type), true);
             String tokenSecret = accountManager.getPassword(account);
             if (token != null && tokenSecret != null) {
                 TWITTER.setOAuthAccessToken(new AccessToken(token, tokenSecret));
@@ -117,11 +118,11 @@ public class TwitterSyncAdapter extends AbstractThreadedSyncAdapter {
         if (accounts.length == 0) {
             account = new Account(context.getString(R.string.app_name), context.getString(R.string.sync_account_type));
             accountManager.addAccountExplicitly(account, "", new Bundle());
+            String authority = context.getString(R.string.content_authority);
+            ContentResolver.setSyncAutomatically(account, authority, true);
         } else {
             account = accounts[0];
         }
-        String authority = context.getString(R.string.content_authority);
-        ContentResolver.setSyncAutomatically(account, authority, true);
         return account;
     }
 }

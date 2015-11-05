@@ -107,6 +107,9 @@ public class TimelineFragment extends Fragment
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         getLoaderManager().initLoader(TIMELINE_LOADER, null, this);
+        if (savedInstanceState == null) {
+            TwitterSyncAdapter.syncImmediately(getActivity());
+        }
         super.onActivityCreated(savedInstanceState);
     }
 
@@ -117,7 +120,6 @@ public class TimelineFragment extends Fragment
         context.registerReceiver(mSyncFinishedReceiver,
                 new IntentFilter(TwitterSyncAdapter.SYNC_FINISHED));
         context.registerReceiver(mTimeTickReceiver, new IntentFilter(Intent.ACTION_TIME_TICK));
-        //TwitterSyncAdapter.syncImmediately(context);
     }
 
     @Override
