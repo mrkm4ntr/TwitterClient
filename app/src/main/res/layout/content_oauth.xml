@@ -23,7 +23,7 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Open Twitter"
+            android:text="@string/button_open_twitter"
             android:id="@+id/button_open_twitter"/>
     </LinearLayout>
 
@@ -39,13 +39,15 @@
             android:layout_height="wrap_content"
             android:inputType="numberPassword"
             android:ems="10"
+            android:hint="@string/label_pin"
             android:id="@+id/password_pin"/>
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="New Button"
-            android:id="@+id/button_auth"/>
+            android:text="@string/button_connect"
+            android:id="@+id/button_auth"
+            />
     </LinearLayout>
 
 </LinearLayout>

@@ -5,11 +5,19 @@
     <!-- SyncAdapter related -->
     <string name="sync_account_type">twitterclient.mrkm4ntr</string>
     <string name="content_authority">mrkm4ntr.twitterclient</string>
-    <string name="title_activity_oauth">OAuthActivity</string>
-    <string name="title_activity_detail">DetailActivity</string>
-    <string name="title_activity_tweet">TweetActivity</string>
+    <string name="title_activity_oauth">Twitter認証</string>
+    <string name="title_activity_detail">詳細</string>
+    <string name="title_activity_tweet">ツイートする</string>
 
+    <string name="button_open_twitter">暗証番号を発行する</string>
+    <string name="button_connect">接続</string>
+
+    <string name="label_pin">暗証番号</string>
+    <string name="label_tweet">ツイート</string>
+
+    <string name="message_progress_tweet">ツイートしています</string>
     <string name="message_error_requestToken">Request Tokenの取得に失敗しました</string>
     <string name="message_error_sync">通信に失敗しました</string>
     <string name="message_error_auth">認証できませんでした</string>
+    <string name="message_error_post_tweet">ツイートできませんでした</string>
 </resources>
