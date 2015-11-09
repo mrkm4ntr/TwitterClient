@@ -32,38 +32,37 @@ class TwitterSyncAdapter(private val mContext: Context, autoInitialize: Boolean)
         Log.d(LOG_TAG, "Starting sync")
         val accountManager = AccountManager.get(mContext)
         val intent = Intent(SYNC_FINISHED)
+        val resolver = mContext.contentResolver
 
         try {
             val token = accountManager.blockingGetAuthToken(account,
                     mContext.getString(R.string.sync_account_type), true)
             val tokenSecret = accountManager.getPassword(account)
-            if (token != null && tokenSecret != null) {
-                TWITTER.oAuthAccessToken = AccessToken(token, tokenSecret)
-                val statuses = TWITTER.homeTimeline
-
-                for (status in statuses) {
-                    val resolver = mContext.contentResolver
-                    val user = status.user
-                    val contentValues = ContentValues()
-                    contentValues.put(TwitterContract.StatusEntry._ID, status.id)
-                    contentValues.put(TwitterContract.StatusEntry.COLUMN_TEXT, status.text)
-                    contentValues.put(TwitterContract.StatusEntry.COLUMN_CREATE_AT,
-                            status.createdAt.time)
-                    contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_NAME, user.name)
-                    contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL,
-                            user.profileImageURL)
-                    contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_SCREEN_NAME,
-                            user.screenName)
-                    contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_LOCATION,
-                            user.location)
-                    contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_BIO,
-                            user.description)
-                    resolver.insert(TwitterContract.StatusEntry.CONTENT_URI, contentValues)
+            token?.run {
+                tokenSecret?.run {
+                    TWITTER.oAuthAccessToken = AccessToken(token, tokenSecret)
+                    TWITTER.homeTimeline
                 }
+            }?.forEach {
+                val user = it.user
+                val contentValues = ContentValues()
+                contentValues.put(TwitterContract.StatusEntry._ID, it.id)
+                contentValues.put(TwitterContract.StatusEntry.COLUMN_TEXT, it.text)
+                contentValues.put(TwitterContract.StatusEntry.COLUMN_CREATE_AT,
+                        it.createdAt.time)
+                contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_NAME, user.name)
+                contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL,
+                        user.profileImageURL)
+                contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_SCREEN_NAME,
+                        user.screenName)
+                contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_LOCATION,
+                        user.location)
+                contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_BIO,
+                        user.description)
+                resolver.insert(TwitterContract.StatusEntry.CONTENT_URI, contentValues)
+            }?.let {
                 intent.putExtra(EXTRA_SUCCEEDED, true)
-            } else {
-                intent.putExtra(EXTRA_JUMP, true)
-            }
+            } ?: intent.putExtra(EXTRA_JUMP, true)
         } catch (e: AuthenticatorException) {
             Log.d(LOG_TAG, e.toString())
             intent.putExtra(EXTRA_JUMP, true)
@@ -100,26 +99,26 @@ class TwitterSyncAdapter(private val mContext: Context, autoInitialize: Boolean)
         }
 
         fun syncImmediately(context: Context) {
-            val bundle = Bundle()
-            bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true)
-            bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true)
+            val bundle = Bundle().apply {
+                putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true)
+                putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true)
+            }
             ContentResolver.requestSync(getSyncAccount(context),
                     context.getString(R.string.content_authority), bundle)
         }
 
         fun getSyncAccount(context: Context): Account {
             val accountManager = context.getSystemService(Context.ACCOUNT_SERVICE) as AccountManager
-            var account: Account? = null
             val accounts = accountManager.getAccountsByType(context.getString(R.string.sync_account_type))
-            if (accounts.size() == 0) {
-                account = Account(context.getString(R.string.app_name), context.getString(R.string.sync_account_type))
+            return if (accounts.size == 0) {
+                val account = Account(context.getString(R.string.app_name), context.getString(R.string.sync_account_type))
                 accountManager.addAccountExplicitly(account, "", Bundle())
                 val authority = context.getString(R.string.content_authority)
                 ContentResolver.setSyncAutomatically(account, authority, true)
+                account
             } else {
-                account = accounts[0]
+                accounts[0]
             }
-            return account!!
         }
     }
 }

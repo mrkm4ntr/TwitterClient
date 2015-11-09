@@ -22,7 +22,7 @@ object TwitterContract {
             val CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_STATUS).build()
 
             val CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_STATUS
-            val CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_STATUS
+            val CONTENT_ITEM_TYPE =ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_STATUS
 
             val TABLE_NAME = "statuses"
 

@@ -13,6 +13,7 @@ import android.support.v4.app.LoaderManager
 import android.support.v4.content.CursorLoader
 import android.support.v4.content.Loader
 import android.support.v4.widget.SwipeRefreshLayout
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,6 +26,7 @@ import mrkm4ntr.twitterclient.data.TwitterContract
 import mrkm4ntr.twitterclient.sync.TwitterSyncAdapter
 
 class TimelineFragment : Fragment(), LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener {
+
     private var mStatusAdapter: StatusAdapter? = null
 
     private var mSwipeRefreshLayout: SwipeRefreshLayout? = null
@@ -63,25 +65,24 @@ class TimelineFragment : Fragment(), LoaderManager.LoaderCallbacks<Cursor>, Swip
         mSwipeRefreshLayout!!.setOnRefreshListener(this)
         mListView = rootView.findViewById(R.id.listView_timeline) as ListView
         mListView!!.adapter = mStatusAdapter
-        mListView!!.onItemClickListener = object : AdapterView.OnItemClickListener {
-            override fun onItemClick(adapterView: AdapterView<*>, view: View, position: Int, l: Long) {
-                val cursor = adapterView.getItemAtPosition(position) as Cursor
-                if (cursor != null) {
-                    (activity as Callback).onItemSelected(TwitterContract.StatusEntry.buildStatusUri(cursor.getLong(cursor.getColumnIndex(TwitterContract.StatusEntry._ID))))
-                }
-                mPosition = position
-            }
+        mListView!!.setOnItemClickListener { parent, view, position, id ->
+            val cursor = parent.getItemAtPosition(position) as Cursor
+            (activity as Callback).onItemSelected(TwitterContract.StatusEntry.buildStatusUri(
+                    cursor.getLong(cursor.getColumnIndex(TwitterContract.StatusEntry._ID))))
+            mPosition = position
         }
 
-        if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
-            mPosition = savedInstanceState.getInt(SELECTED_KEY)
+        savedInstanceState?.let {
+            if (it.containsKey(SELECTED_KEY)) {
+                mPosition = savedInstanceState.getInt(SELECTED_KEY)
+            }
         }
         return rootView
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         loaderManager.initLoader(TIMELINE_LOADER, Bundle(), this)
-        if (savedInstanceState == null) {
+        savedInstanceState?.let {
             TwitterSyncAdapter.syncImmediately(activity)
             mSwipeRefreshLayout!!.isRefreshing = true
         }
@@ -91,8 +92,7 @@ class TimelineFragment : Fragment(), LoaderManager.LoaderCallbacks<Cursor>, Swip
     override fun onResume() {
         super.onResume()
         val context = activity
-        context.registerReceiver(mSyncFinishedReceiver,
-                IntentFilter(TwitterSyncAdapter.SYNC_FINISHED))
+        context.registerReceiver(mSyncFinishedReceiver, IntentFilter(TwitterSyncAdapter.SYNC_FINISHED))
         context.registerReceiver(mTimeTickReceiver, IntentFilter(Intent.ACTION_TIME_TICK))
     }
 
@@ -140,6 +140,13 @@ class TimelineFragment : Fragment(), LoaderManager.LoaderCallbacks<Cursor>, Swip
 
         private val TIMELINE_LOADER = 0
 
-        private val STATUS_COLUMNS = arrayOf(TwitterContract.StatusEntry._ID, TwitterContract.StatusEntry.COLUMN_TEXT, TwitterContract.StatusEntry.COLUMN_CREATE_AT, TwitterContract.StatusEntry.COLUMN_USER_NAME, TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL, TwitterContract.StatusEntry.COLUMN_USER_SCREEN_NAME)
+        private val STATUS_COLUMNS = arrayOf(
+                TwitterContract.StatusEntry._ID,
+                TwitterContract.StatusEntry.COLUMN_TEXT,
+                TwitterContract.StatusEntry.COLUMN_CREATE_AT,
+                TwitterContract.StatusEntry.COLUMN_USER_NAME,
+                TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL,
+                TwitterContract.StatusEntry.COLUMN_USER_SCREEN_NAME
+        )
     }
 }

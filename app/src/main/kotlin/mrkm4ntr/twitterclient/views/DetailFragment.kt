@@ -56,7 +56,7 @@ class DetailFragment : Fragment(), LoaderManager.LoaderCallbacks<Cursor> {
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
-        loaderManager.initLoader(DETAIL_LOADER, null, this)
+        loaderManager.initLoader(DETAIL_LOADER, Bundle.EMPTY, this)
         super.onActivityCreated(savedInstanceState)
     }
 
@@ -65,51 +65,50 @@ class DetailFragment : Fragment(), LoaderManager.LoaderCallbacks<Cursor> {
             inflater!!.inflate(R.menu.menu_detail_fragment, menu)
             val menuItem = menu!!.findItem(R.id.action_share)
             mShareActionProvider = MenuItemCompat.getActionProvider(menuItem) as ShareActionProvider
-            if (mStatus != null) {
+            mStatus?.let {
                 mShareActionProvider!!.setShareIntent(createShareStatusIntent())
             }
         }
     }
 
     private fun createShareStatusIntent(): Intent {
-        val intent = Intent(Intent.ACTION_SEND)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET)
-        intent.setType("text/plain")
-        intent.putExtra(Intent.EXTRA_TEXT, mStatus!! + STATUS_SHARE_HASHTAG)
-        return intent
+        return Intent(Intent.ACTION_SEND).apply {
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET)
+            setType("text/plain")
+            putExtra(Intent.EXTRA_TEXT, mStatus!! + STATUS_SHARE_HASHTAG)
+        }
     }
 
     override fun onCreateLoader(id: Int, args: Bundle): Loader<Cursor>? {
-        if (mUri != null) {
-            return CursorLoader(activity, mUri, DETAIL_COLUMNS, null, null, null)
+        mUri?.let {
+            return CursorLoader(activity, it, DETAIL_COLUMNS, null, null, null)
         }
         return null
     }
 
     override fun onLoadFinished(loader: Loader<Cursor>, data: Cursor?) {
-        if (data != null && data.moveToFirst()) {
-            val profileImageUrl = data.getString(data.getColumnIndex(
-                    TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL))
-            StatusAdapter.UpdateImageViewTask(mIconView!!, profileImageUrl).execute()
-            val name = data.getString(data.getColumnIndex(
-                    TwitterContract.StatusEntry.COLUMN_USER_NAME))
-            mNameView!!.text = name
-            val screenName = data.getString(data.getColumnIndex(
-                    TwitterContract.StatusEntry.COLUMN_USER_SCREEN_NAME))
-            mScreenNameView!!.text = screenName
-            val location = data.getString(data.getColumnIndex(
-                    TwitterContract.StatusEntry.COLUMN_USER_LOCATION))
-            mLocationView!!.text = location
-            val bio = data.getString(data.getColumnIndex(
-                    TwitterContract.StatusEntry.COLUMN_USER_BIO))
-            mBioView!!.text = bio
-            val text = data.getString(data.getColumnIndex(
-                    TwitterContract.StatusEntry.COLUMN_TEXT))
-            mTextView!!.text = text
-            mStatus = text
+        data?.run {
+            if (moveToFirst()) {
+                val profileImageUrl = getString(getColumnIndex(
+                        TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL))
+                StatusAdapter.UpdateImageViewTask(mIconView!!, profileImageUrl).execute()
+                val name = getString(getColumnIndex(TwitterContract.StatusEntry.COLUMN_USER_NAME))
+                mNameView!!.text = name
+                val screenName = getString(getColumnIndex(
+                        TwitterContract.StatusEntry.COLUMN_USER_SCREEN_NAME))
+                mScreenNameView!!.text = screenName
+                val location = getString(getColumnIndex(
+                        TwitterContract.StatusEntry.COLUMN_USER_LOCATION))
+                mLocationView!!.text = location
+                val bio = getString(getColumnIndex(TwitterContract.StatusEntry.COLUMN_USER_BIO))
+                mBioView!!.text = bio
+                val text = getString(getColumnIndex(TwitterContract.StatusEntry.COLUMN_TEXT))
+                mTextView!!.text = text
+                mStatus = text
 
-            if (mShareActionProvider != null) {
-                mShareActionProvider!!.setShareIntent(createShareStatusIntent())
+                mShareActionProvider?.run {
+                    setShareIntent(createShareStatusIntent())
+                }
             }
         }
     }
@@ -127,6 +126,13 @@ class DetailFragment : Fragment(), LoaderManager.LoaderCallbacks<Cursor> {
 
         private val DETAIL_LOADER = 0
 
-        private val DETAIL_COLUMNS = arrayOf(TwitterContract.StatusEntry._ID, TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL, TwitterContract.StatusEntry.COLUMN_USER_NAME, TwitterContract.StatusEntry.COLUMN_USER_SCREEN_NAME, TwitterContract.StatusEntry.COLUMN_TEXT, TwitterContract.StatusEntry.COLUMN_USER_LOCATION, TwitterContract.StatusEntry.COLUMN_USER_BIO)
+        private val DETAIL_COLUMNS = arrayOf(
+                TwitterContract.StatusEntry._ID,
+                TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL,
+                TwitterContract.StatusEntry.COLUMN_USER_NAME,
+                TwitterContract.StatusEntry.COLUMN_USER_SCREEN_NAME,
+                TwitterContract.StatusEntry.COLUMN_TEXT,
+                TwitterContract.StatusEntry.COLUMN_USER_LOCATION,
+                TwitterContract.StatusEntry.COLUMN_USER_BIO)
     }
 }

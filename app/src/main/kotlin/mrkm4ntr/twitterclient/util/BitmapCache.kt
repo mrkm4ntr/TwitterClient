@@ -23,17 +23,15 @@ object BitmapCache {
     }
 
     fun setImage(key: String, bitmap: Bitmap?) {
-        if (!hasImage(key) && bitmap != null) {
-            mCache.put(key, bitmap)
+        bitmap?.let {
+            if (!hasImage(key)) {
+                mCache.put(key, bitmap)
+            }
         }
     }
 
     fun hasImage(key: String): Boolean {
-        if (getImage(key) == null) {
-            return false
-        } else {
-            return true
-        }
+        return getImage(key) != null
     }
 
     fun clear() {

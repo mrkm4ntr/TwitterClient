@@ -34,11 +34,11 @@ class ProgressDialogFragment : DialogFragment() {
         private var sDialog: ProgressDialog? = null
 
         fun newInstance(message: String): ProgressDialogFragment {
-            val fragment = ProgressDialogFragment()
-            val args = Bundle()
-            args.putString("message", message)
-            fragment.arguments = args
-            return fragment
+            return ProgressDialogFragment().apply {
+                arguments = Bundle().apply {
+                    putString("message", message)
+                }
+            }
         }
     }
 }

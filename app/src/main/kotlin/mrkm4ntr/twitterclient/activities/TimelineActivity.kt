@@ -26,8 +26,11 @@ class TimelineActivity : AppCompatActivity(), TimelineFragment.Callback {
 
         if (findViewById(R.id.status_detail_container) != null) {
             mTwoPane = true
-            if (savedInstanceState == null) {
-                supportFragmentManager.beginTransaction().replace(R.id.status_detail_container, DetailFragment(), DETAIL_FRAGMENT_TAG).commit()
+            savedInstanceState?.let {
+                supportFragmentManager
+                        .beginTransaction()
+                        .replace(R.id.status_detail_container, DetailFragment(), DETAIL_FRAGMENT_TAG)
+                        .commit()
             }
         } else {
             mTwoPane = false
@@ -35,11 +38,7 @@ class TimelineActivity : AppCompatActivity(), TimelineFragment.Callback {
 
         val fab = findViewById(R.id.fab) as FloatingActionButton
         val intent = Intent(this, TweetActivity::class.java)
-        fab.setOnClickListener(object : View.OnClickListener {
-            override fun onClick(view: View) {
-                startActivity(intent)
-            }
-        })
+        fab.setOnClickListener { view -> startActivity(intent) }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -64,11 +63,15 @@ class TimelineActivity : AppCompatActivity(), TimelineFragment.Callback {
 
     override fun onItemSelected(uri: Uri) {
         if (mTwoPane) {
-            val arguments = Bundle()
-            arguments.putParcelable(DetailFragment.DETAIL_URI, uri)
-            val fragment = DetailFragment()
-            fragment.arguments = arguments
-            supportFragmentManager.beginTransaction().replace(R.id.status_detail_container, fragment, DETAIL_FRAGMENT_TAG).commit()
+            val fragment = DetailFragment().apply {
+                arguments = Bundle().apply {
+                    putParcelable(DetailFragment.DETAIL_URI, uri)
+                }
+            }
+            supportFragmentManager
+                    .beginTransaction()
+                    .replace(R.id.status_detail_container, fragment, DETAIL_FRAGMENT_TAG)
+                    .commit()
         } else {
             val intent = Intent(this, DetailActivity::class.java).setData(uri)
             startActivity(intent)

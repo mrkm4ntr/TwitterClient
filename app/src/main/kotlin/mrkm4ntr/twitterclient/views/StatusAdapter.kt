@@ -18,8 +18,8 @@ import java.util.Date
 
 import mrkm4ntr.twitterclient.R
 import mrkm4ntr.twitterclient.data.TwitterContract
+import mrkm4ntr.twitterclient.extensions.datetimeAgo
 import mrkm4ntr.twitterclient.util.BitmapCache
-import mrkm4ntr.twitterclient.util.Utility
 
 class StatusAdapter(context: Context, c: Cursor?, flags: Int) : CursorAdapter(context, c, flags) {
 
@@ -46,23 +46,24 @@ class StatusAdapter(context: Context, c: Cursor?, flags: Int) : CursorAdapter(co
 
     override fun bindView(view: View, context: Context, cursor: Cursor) {
         val viewHolder = view.tag as ViewHolder
-        val profileImageUrl = cursor.getString(cursor.getColumnIndex(
-                TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL))
-        val userName = cursor.getString(cursor.getColumnIndex(
-                TwitterContract.StatusEntry.COLUMN_USER_NAME))
-        val screenName = cursor.getString(cursor.getColumnIndex(
-                TwitterContract.StatusEntry.COLUMN_USER_SCREEN_NAME))
-        val text = cursor.getString(cursor.getColumnIndex(
-                TwitterContract.StatusEntry.COLUMN_TEXT))
-        val createdAt = cursor.getLong(cursor.getColumnIndex(
-                TwitterContract.StatusEntry.COLUMN_CREATE_AT))
-        viewHolder.nameView.text = userName + "@" + screenName
-        viewHolder.textView.text = text
-        viewHolder.createdAtView.text = Utility.datetimeAgo(Date(createdAt))
-        UpdateImageViewTask(viewHolder.iconView, profileImageUrl).execute()
+        cursor.run {
+            val profileImageUrl = getString(getColumnIndex(
+                    TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL))
+            val userName = getString(getColumnIndex(
+                    TwitterContract.StatusEntry.COLUMN_USER_NAME))
+            val screenName = getString(getColumnIndex(
+                    TwitterContract.StatusEntry.COLUMN_USER_SCREEN_NAME))
+            val text = getString(getColumnIndex(TwitterContract.StatusEntry.COLUMN_TEXT))
+            val createdAt = getLong(getColumnIndex(TwitterContract.StatusEntry.COLUMN_CREATE_AT))
+            viewHolder.nameView.text = userName + "@" + screenName
+            viewHolder.textView.text = text
+            viewHolder.createdAtView.text = Date(createdAt).datetimeAgo()
+            UpdateImageViewTask(viewHolder.iconView, profileImageUrl).execute()
+        }
     }
 
-    class UpdateImageViewTask(private val mImageView: ImageView, private val mImageUrl: String) : AsyncTask<Void, Void, Bitmap>() {
+    class UpdateImageViewTask(private val mImageView: ImageView, private val mImageUrl: String) :
+            AsyncTask<Void, Void, Bitmap>() {
 
         override fun doInBackground(vararg params: Void): Bitmap? {
             try {
@@ -77,8 +78,8 @@ class StatusAdapter(context: Context, c: Cursor?, flags: Int) : CursorAdapter(co
 
         override fun onPreExecute() {
             val bitmap = BitmapCache.getImage(mImageUrl)
-            if (bitmap != null) {
-                mImageView.setImageBitmap(bitmap)
+            bitmap?.let {
+                mImageView.setImageBitmap(it)
                 cancel(true)
             }
         }
