@@ -3,7 +3,6 @@ package mrkm4ntr.twitterclient.activities;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
 
 import mrkm4ntr.twitterclient.R;
 import mrkm4ntr.twitterclient.views.DetailFragment;
@@ -28,12 +27,6 @@ public class DetailActivity extends AppCompatActivity {
                     .add(R.id.status_detail_container, fragment)
                     .commit();
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_detail, menu);
-        return true;
     }
 
 }
