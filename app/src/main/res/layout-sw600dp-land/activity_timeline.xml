@@ -34,14 +34,14 @@
             android:name="mrkm4ntr.twitterclient.views.TimelineFragment"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="2"
+            android:layout_weight="6"
             android:id="@+id/fragment_timeline"
             tools:layout="@layout/fragment_timeline"/>
 
         <FrameLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"
+            android:layout_weight="4"
             android:id="@+id/status_detail_container" />
     </LinearLayout>
 

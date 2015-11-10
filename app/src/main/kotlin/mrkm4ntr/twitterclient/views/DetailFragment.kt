@@ -21,6 +21,8 @@ import android.widget.TextView
 
 import mrkm4ntr.twitterclient.R
 import mrkm4ntr.twitterclient.data.TwitterContract
+import mrkm4ntr.twitterclient.extensions.datetimeAgo
+import java.util.*
 
 class DetailFragment : Fragment(), LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -34,6 +36,7 @@ class DetailFragment : Fragment(), LoaderManager.LoaderCallbacks<Cursor> {
     private var mLocationView: TextView? = null
     private var mBioView: TextView? = null
     private var mTextView: TextView? = null
+    private var mCreatedAtView: TextView? = null
 
     init {
         setHasOptionsMenu(true)
@@ -52,6 +55,7 @@ class DetailFragment : Fragment(), LoaderManager.LoaderCallbacks<Cursor> {
         mLocationView = rootView.findViewById(R.id.detail_userLocation_textView) as TextView
         mBioView = rootView.findViewById(R.id.detail_userBio_textView) as TextView
         mTextView = rootView.findViewById(R.id.detail_text_textView) as TextView
+        mCreatedAtView = rootView.findViewById(R.id.detail_createAt_textView) as TextView
         return rootView
     }
 
@@ -96,7 +100,7 @@ class DetailFragment : Fragment(), LoaderManager.LoaderCallbacks<Cursor> {
                 mNameView!!.text = name
                 val screenName = getString(getColumnIndex(
                         TwitterContract.StatusEntry.COLUMN_USER_SCREEN_NAME))
-                mScreenNameView!!.text = screenName
+                mScreenNameView!!.text = "@$screenName"
                 val location = getString(getColumnIndex(
                         TwitterContract.StatusEntry.COLUMN_USER_LOCATION))
                 mLocationView!!.text = location
@@ -104,8 +108,11 @@ class DetailFragment : Fragment(), LoaderManager.LoaderCallbacks<Cursor> {
                 mBioView!!.text = bio
                 val text = getString(getColumnIndex(TwitterContract.StatusEntry.COLUMN_TEXT))
                 mTextView!!.text = text
-                mStatus = text
+                mCreatedAtView!!.text =
+                        Date(getLong(getColumnIndex(TwitterContract.StatusEntry.COLUMN_CREATE_AT)))
+                                .datetimeAgo()
 
+                mStatus = text
                 mShareActionProvider?.run {
                     setShareIntent(createShareStatusIntent())
                 }
@@ -133,6 +140,7 @@ class DetailFragment : Fragment(), LoaderManager.LoaderCallbacks<Cursor> {
                 TwitterContract.StatusEntry.COLUMN_USER_SCREEN_NAME,
                 TwitterContract.StatusEntry.COLUMN_TEXT,
                 TwitterContract.StatusEntry.COLUMN_USER_LOCATION,
-                TwitterContract.StatusEntry.COLUMN_USER_BIO)
+                TwitterContract.StatusEntry.COLUMN_USER_BIO,
+                TwitterContract.StatusEntry.COLUMN_CREATE_AT)
     }
 }

@@ -22,7 +22,13 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_timeline"/>
+    <fragment
+        android:id="@+id/fragment"
+        android:name="mrkm4ntr.twitterclient.views.TimelineFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:layout="@layout/fragment_timeline"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
