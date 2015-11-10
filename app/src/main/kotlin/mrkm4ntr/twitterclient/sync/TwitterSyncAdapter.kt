@@ -18,21 +18,19 @@ import java.io.IOException
 
 import mrkm4ntr.twitterclient.R
 import mrkm4ntr.twitterclient.data.TwitterContract
-import twitter4j.Status
-import twitter4j.Twitter
-import twitter4j.TwitterException
-import twitter4j.TwitterFactory
-import twitter4j.User
+import twitter4j.*
 import twitter4j.auth.AccessToken
 
 class TwitterSyncAdapter(private val mContext: Context, autoInitialize: Boolean) : AbstractThreadedSyncAdapter(mContext, autoInitialize) {
 
-    override fun onPerformSync(
-            account: Account, bundle: Bundle, s: String, contentProviderClient: ContentProviderClient, syncResult: SyncResult) {
+    override fun onPerformSync(account: Account, bundle: Bundle, s: String,
+                               contentProviderClient: ContentProviderClient,syncResult: SyncResult) {
         Log.d(LOG_TAG, "Starting sync")
         val accountManager = AccountManager.get(mContext)
         val intent = Intent(SYNC_FINISHED)
         val resolver = mContext.contentResolver
+
+        val maxId: Long? = if (bundle.containsKey("maxid")) bundle.getLong("maxid") else null
 
         try {
             val token = accountManager.blockingGetAuthToken(account,
@@ -41,7 +39,9 @@ class TwitterSyncAdapter(private val mContext: Context, autoInitialize: Boolean)
             token?.run {
                 tokenSecret?.run {
                     TWITTER.oAuthAccessToken = AccessToken(token, tokenSecret)
-                    TWITTER.homeTimeline
+                    maxId?.run {
+                        TWITTER.getHomeTimeline(Paging().maxId(maxId))
+                    } ?: TWITTER.homeTimeline
                 }
             }?.forEach {
                 val user = it.user
@@ -98,10 +98,11 @@ class TwitterSyncAdapter(private val mContext: Context, autoInitialize: Boolean)
             TWITTER.setOAuthConsumer(CONSUMER_KEY, CONSUMER_SECRET)
         }
 
-        fun syncImmediately(context: Context) {
+        fun syncImmediately(context: Context, maxId : Long? = null) {
             val bundle = Bundle().apply {
                 putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true)
                 putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true)
+                maxId?.let { putLong("maxid", it) }
             }
             ContentResolver.requestSync(getSyncAccount(context),
                     context.getString(R.string.content_authority), bundle)

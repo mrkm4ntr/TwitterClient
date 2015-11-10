@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.database.Cursor
 import android.net.Uri
+import android.os.AsyncTask
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
@@ -71,6 +72,12 @@ class TimelineFragment : Fragment(), LoaderManager.LoaderCallbacks<Cursor>, Swip
                     cursor.getLong(cursor.getColumnIndex(TwitterContract.StatusEntry._ID))))
             mPosition = position
         }
+        mListView!!.setOnScrollListener(object : EndlessScrollListener(mStatusAdapter!!) {
+            override fun onLoadMore(maxId: Long, totalItemCount: Int): Boolean {
+                TwitterSyncAdapter.syncImmediately(activity, maxId)
+                return true
+            }
+        })
 
         savedInstanceState?.let {
             if (it.containsKey(SELECTED_KEY)) {
