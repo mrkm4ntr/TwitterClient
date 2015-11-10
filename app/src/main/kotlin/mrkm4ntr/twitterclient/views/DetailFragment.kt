@@ -13,7 +13,6 @@ import android.support.v7.widget.ShareActionProvider
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -21,6 +20,7 @@ import android.widget.TextView
 
 import mrkm4ntr.twitterclient.R
 import mrkm4ntr.twitterclient.data.TwitterContract
+import mrkm4ntr.twitterclient.extensions.applyHttpLink
 import mrkm4ntr.twitterclient.extensions.datetimeAgo
 import java.util.*
 
@@ -108,6 +108,7 @@ class DetailFragment : Fragment(), LoaderManager.LoaderCallbacks<Cursor> {
                 mBioView!!.text = bio
                 val text = getString(getColumnIndex(TwitterContract.StatusEntry.COLUMN_TEXT))
                 mTextView!!.text = text
+                mTextView!!.applyHttpLink(context)
                 mCreatedAtView!!.text =
                         Date(getLong(getColumnIndex(TwitterContract.StatusEntry.COLUMN_CREATE_AT)))
                                 .datetimeAgo()

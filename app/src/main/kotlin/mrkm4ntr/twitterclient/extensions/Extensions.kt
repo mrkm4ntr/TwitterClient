@@ -1,6 +1,13 @@
 package mrkm4ntr.twitterclient.extensions
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.widget.TextView
+import com.klinker.android.link_builder.Link
+import com.klinker.android.link_builder.LinkBuilder
 import java.util.*
+import java.util.regex.Pattern
 
 val timeUnits = listOf(
         Pair(1000L * 60, "minute"),
@@ -19,4 +26,11 @@ fun Date.datetimeAgo(): String {
         return "$value ${it.second}${if (value > 1) "s" else ""} ago"
     }
     return "just now"
+}
+
+val httpPattern = Pattern.compile("(http|https):([^\\x00-\\x20()\"<>\\x7F-\\xFF])*", Pattern.CASE_INSENSITIVE)
+
+fun TextView.applyHttpLink(context: Context) {
+    val link = Link(httpPattern).setOnClickListener { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) }
+    LinkBuilder.on(this).addLink(link).build()
 }

@@ -4,7 +4,11 @@ import android.content.Context
 import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Typeface
 import android.os.AsyncTask
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.style.StyleSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,12 +16,12 @@ import android.widget.CursorAdapter
 import android.widget.ImageView
 import android.widget.TextView
 
-import java.io.InputStream
 import java.net.URL
 import java.util.Date
 
 import mrkm4ntr.twitterclient.R
 import mrkm4ntr.twitterclient.data.TwitterContract
+import mrkm4ntr.twitterclient.extensions.applyHttpLink
 import mrkm4ntr.twitterclient.extensions.datetimeAgo
 import mrkm4ntr.twitterclient.util.BitmapCache
 
@@ -55,8 +59,14 @@ class StatusAdapter(context: Context, c: Cursor?, flags: Int) : CursorAdapter(co
                     TwitterContract.StatusEntry.COLUMN_USER_SCREEN_NAME))
             val text = getString(getColumnIndex(TwitterContract.StatusEntry.COLUMN_TEXT))
             val createdAt = getLong(getColumnIndex(TwitterContract.StatusEntry.COLUMN_CREATE_AT))
-            viewHolder.nameView.text = userName + "@" + screenName
+            viewHolder.nameView.text = SpannableStringBuilder().apply {
+                append(userName)
+                setSpan(StyleSpan(Typeface.BOLD), 0, userName.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                append("@")
+                append(screenName)
+            }
             viewHolder.textView.text = text
+            viewHolder.textView.applyHttpLink(context)
             viewHolder.createdAtView.text = Date(createdAt).datetimeAgo()
             UpdateImageViewTask(viewHolder.iconView, profileImageUrl).execute()
         }
