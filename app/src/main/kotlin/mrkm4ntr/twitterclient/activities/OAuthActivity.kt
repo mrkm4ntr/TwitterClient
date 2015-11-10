@@ -125,7 +125,7 @@ class OAuthActivity : AppCompatActivity() {
 
     companion object {
 
-        private val LOG_TAG = OAuthActivity::class.java.simpleName
+        public val LOG_TAG = OAuthActivity::class.java.simpleName
     }
 
 }
