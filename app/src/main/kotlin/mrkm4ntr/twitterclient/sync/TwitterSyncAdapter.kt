@@ -43,7 +43,7 @@ class TwitterSyncAdapter(private val mContext: Context, autoInitialize: Boolean)
                         TWITTER.getHomeTimeline(Paging().maxId(maxId))
                     } ?: TWITTER.homeTimeline
                 }
-            }?.forEach {
+            }?.map {
                 val user = it.user
                 val contentValues = ContentValues()
                 contentValues.put(TwitterContract.StatusEntry._ID, it.id)
@@ -59,8 +59,9 @@ class TwitterSyncAdapter(private val mContext: Context, autoInitialize: Boolean)
                         user.location)
                 contentValues.put(TwitterContract.StatusEntry.COLUMN_USER_BIO,
                         user.description)
-                resolver.insert(TwitterContract.StatusEntry.CONTENT_URI, contentValues)
+                contentValues
             }?.let {
+                resolver.bulkInsert(TwitterContract.StatusEntry.CONTENT_URI, it.toTypedArray())
                 intent.putExtra(EXTRA_SUCCEEDED, true)
             } ?: intent.putExtra(EXTRA_JUMP, true)
         } catch (e: AuthenticatorException) {
