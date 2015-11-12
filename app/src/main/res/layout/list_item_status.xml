@@ -16,11 +16,10 @@
         android:layout_height="wrap_content"
         android:paddingTop="4dp">
 
-        <ImageView
+        <de.hdodenhof.circleimageview.CircleImageView
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:id="@+id/list_item_icon"
-            />
+            android:id="@+id/list_item_icon" />
     </FrameLayout>
 
     <LinearLayout
