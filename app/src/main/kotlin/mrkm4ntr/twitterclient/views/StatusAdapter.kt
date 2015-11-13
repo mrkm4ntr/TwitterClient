@@ -2,10 +2,7 @@ package mrkm4ntr.twitterclient.views
 
 import android.content.Context
 import android.database.Cursor
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Typeface
-import android.os.AsyncTask
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.StyleSpan
@@ -15,15 +12,14 @@ import android.view.ViewGroup
 import android.widget.CursorAdapter
 import android.widget.ImageView
 import android.widget.TextView
+import com.bumptech.glide.Glide
 
-import java.net.URL
 import java.util.Date
 
 import mrkm4ntr.twitterclient.R
 import mrkm4ntr.twitterclient.data.TwitterContract
 import mrkm4ntr.twitterclient.extensions.applyHttpLink
 import mrkm4ntr.twitterclient.extensions.datetimeAgo
-import mrkm4ntr.twitterclient.util.BitmapCache
 
 class StatusAdapter(context: Context, c: Cursor?, flags: Int) : CursorAdapter(context, c, flags) {
 
@@ -68,35 +64,7 @@ class StatusAdapter(context: Context, c: Cursor?, flags: Int) : CursorAdapter(co
             viewHolder.textView.text = text
             viewHolder.textView.applyHttpLink(context)
             viewHolder.createdAtView.text = Date(createdAt).datetimeAgo()
-            UpdateImageViewTask(viewHolder.iconView, profileImageUrl).execute()
-        }
-    }
-
-    class UpdateImageViewTask(private val mImageView: ImageView, private val mImageUrl: String) :
-            AsyncTask<Void, Void, Bitmap>() {
-
-        override fun doInBackground(vararg params: Void): Bitmap? {
-            try {
-                val input = URL(mImageUrl).openStream()
-                return BitmapFactory.decodeStream(input)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-
-            return null
-        }
-
-        override fun onPreExecute() {
-            val bitmap = BitmapCache.getImage(mImageUrl)
-            bitmap?.let {
-                mImageView.setImageBitmap(it)
-                cancel(true)
-            }
-        }
-
-        override fun onPostExecute(bitmap: Bitmap) {
-            mImageView.setImageBitmap(bitmap)
-            BitmapCache.setImage(mImageUrl, bitmap)
+            Glide.with(context).load(profileImageUrl).into(viewHolder.iconView)
         }
     }
 

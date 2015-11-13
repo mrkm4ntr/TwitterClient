@@ -17,6 +17,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import com.bumptech.glide.Glide
 
 import mrkm4ntr.twitterclient.R
 import mrkm4ntr.twitterclient.data.TwitterContract
@@ -95,7 +96,7 @@ class DetailFragment : Fragment(), LoaderManager.LoaderCallbacks<Cursor> {
             if (moveToFirst()) {
                 val profileImageUrl = getString(getColumnIndex(
                         TwitterContract.StatusEntry.COLUMN_USER_PROFILE_IMAGE_URL))
-                StatusAdapter.UpdateImageViewTask(mIconView!!, profileImageUrl).execute()
+                Glide.with(this@DetailFragment).load(profileImageUrl).into(mIconView)
                 val name = getString(getColumnIndex(TwitterContract.StatusEntry.COLUMN_USER_NAME))
                 mNameView!!.text = name
                 val screenName = getString(getColumnIndex(
