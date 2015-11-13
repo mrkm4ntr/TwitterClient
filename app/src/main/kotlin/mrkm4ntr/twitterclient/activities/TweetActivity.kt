@@ -17,11 +17,14 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 
 import mrkm4ntr.twitterclient.R
 import mrkm4ntr.twitterclient.data.TwitterContract
 import mrkm4ntr.twitterclient.sync.TwitterSyncAdapter
+import mrkm4ntr.twitterclient.util.BitmapCache
 import mrkm4ntr.twitterclient.views.ProgressDialogFragment
+import mrkm4ntr.twitterclient.views.StatusAdapter
 import twitter4j.Status
 import twitter4j.Twitter
 import twitter4j.User
@@ -38,7 +41,7 @@ class TweetActivity : AppCompatActivity() {
         setContentView(R.layout.activity_tweet)
         val toolbar = findViewById(R.id.toolbar) as Toolbar
         setSupportActionBar(toolbar)
-        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+        supportActionBar.setDisplayHomeAsUpEnabled(true)
 
         mLayout = findViewById(R.id.layout_post_tweet)
 
