@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.database.Cursor
 import android.net.Uri
-import android.os.AsyncTask
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
@@ -14,11 +13,9 @@ import android.support.v4.app.LoaderManager
 import android.support.v4.content.CursorLoader
 import android.support.v4.content.Loader
 import android.support.v4.widget.SwipeRefreshLayout
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
 import android.widget.ListView
 
 import mrkm4ntr.twitterclient.R
@@ -28,16 +25,18 @@ import mrkm4ntr.twitterclient.sync.TwitterSyncAdapter
 
 class TimelineFragment : Fragment(), LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener {
 
-    private var mStatusAdapter: StatusAdapter? = null
+    private val mStatusAdapter by lazy { StatusAdapter(activity, null, 0) }
 
-    private var mSwipeRefreshLayout: SwipeRefreshLayout? = null
+    private val mSwipeRefreshLayout by lazy {
+        view.findViewById(R.id.refreshLayout_timeline) as SwipeRefreshLayout
+    }
 
-    private var mListView: ListView? = null
+    private val mListView by lazy { view.findViewById(R.id.listView_timeline) as ListView }
     private var mPosition = ListView.INVALID_POSITION
 
     private val mSyncFinishedReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            mSwipeRefreshLayout!!.isRefreshing = false
+            mSwipeRefreshLayout.isRefreshing = false
             if (!intent.getBooleanExtra(TwitterSyncAdapter.EXTRA_SUCCEEDED, false)) {
                 Snackbar.make(mListView, context.getString(R.string.message_error_sync),
                         Snackbar.LENGTH_SHORT).show()
@@ -50,7 +49,7 @@ class TimelineFragment : Fragment(), LoaderManager.LoaderCallbacks<Cursor>, Swip
 
     private val mTimeTickReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            mStatusAdapter!!.notifyDataSetChanged()
+            mStatusAdapter.notifyDataSetChanged()
         }
     }
 
@@ -60,24 +59,7 @@ class TimelineFragment : Fragment(), LoaderManager.LoaderCallbacks<Cursor>, Swip
 
     override fun onCreateView(
             inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        mStatusAdapter = StatusAdapter(activity, null, 0)
         val rootView = inflater!!.inflate(R.layout.fragment_timeline, container, false)
-        mSwipeRefreshLayout = rootView.findViewById(R.id.refreshLayout_timeline) as SwipeRefreshLayout
-        mSwipeRefreshLayout!!.setOnRefreshListener(this)
-        mListView = rootView.findViewById(R.id.listView_timeline) as ListView
-        mListView!!.adapter = mStatusAdapter
-        mListView!!.setOnItemClickListener { parent, view, position, id ->
-            val cursor = parent.getItemAtPosition(position) as Cursor
-            (activity as Callback).onItemSelected(TwitterContract.StatusEntry.buildStatusUri(
-                    cursor.getLong(cursor.getColumnIndex(TwitterContract.StatusEntry._ID))))
-            mPosition = position
-        }
-        mListView!!.setOnScrollListener(object : EndlessScrollListener(mStatusAdapter!!) {
-            override fun onLoadMore(maxId: Long, totalItemCount: Int): Boolean {
-                TwitterSyncAdapter.syncImmediately(activity, maxId)
-                return true
-            }
-        })
 
         savedInstanceState?.let {
             if (it.containsKey(SELECTED_KEY)) {
@@ -91,8 +73,22 @@ class TimelineFragment : Fragment(), LoaderManager.LoaderCallbacks<Cursor>, Swip
         loaderManager.initLoader(TIMELINE_LOADER, Bundle(), this)
         savedInstanceState?.let {
             TwitterSyncAdapter.syncImmediately(activity)
-            mSwipeRefreshLayout!!.isRefreshing = true
+            mSwipeRefreshLayout.isRefreshing = true
         }
+        mSwipeRefreshLayout.setOnRefreshListener(this)
+        mListView.adapter = mStatusAdapter
+        mListView.setOnItemClickListener { parent, view, position, id ->
+            val cursor = parent.getItemAtPosition(position) as Cursor
+            (activity as Callback).onItemSelected(TwitterContract.StatusEntry.buildStatusUri(
+                    cursor.getLong(cursor.getColumnIndex(TwitterContract.StatusEntry._ID))))
+            mPosition = position
+        }
+        mListView.setOnScrollListener(object : EndlessScrollListener(mStatusAdapter) {
+            override fun onLoadMore(maxId: Long, totalItemCount: Int): Boolean {
+                TwitterSyncAdapter.syncImmediately(activity, maxId)
+                return true
+            }
+        })
         super.onActivityCreated(savedInstanceState)
     }
 
@@ -125,15 +121,15 @@ class TimelineFragment : Fragment(), LoaderManager.LoaderCallbacks<Cursor>, Swip
     }
 
     override fun onLoadFinished(loader: Loader<Cursor>, data: Cursor) {
-        mStatusAdapter!!.swapCursor(data)
+        mStatusAdapter.swapCursor(data)
         if (mPosition != ListView.INVALID_POSITION) {
-            mListView!!.smoothScrollToPosition(mPosition)
-            mListView!!.setItemChecked(mPosition, true)
+            mListView.smoothScrollToPosition(mPosition)
+            mListView.setItemChecked(mPosition, true)
         }
     }
 
     override fun onLoaderReset(loader: Loader<Cursor>) {
-        mStatusAdapter!!.swapCursor(null)
+        mStatusAdapter.swapCursor(null)
     }
 
     override fun onRefresh() {

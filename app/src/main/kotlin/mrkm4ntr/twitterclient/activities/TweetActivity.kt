@@ -1,8 +1,6 @@
 package mrkm4ntr.twitterclient.activities
 
-import android.accounts.Account
 import android.accounts.AccountManager
-import android.app.Dialog
 import android.app.DialogFragment
 import android.content.ContentValues
 import android.content.Context
@@ -23,14 +21,12 @@ import mrkm4ntr.twitterclient.data.TwitterContract
 import mrkm4ntr.twitterclient.sync.TwitterSyncAdapter
 import mrkm4ntr.twitterclient.views.ProgressDialogFragment
 import twitter4j.Status
-import twitter4j.Twitter
-import twitter4j.User
 import twitter4j.auth.AccessToken
 
 class TweetActivity : AppCompatActivity() {
 
     private var mLayout: View? = null
-    private var mTweetButton: Button? = null
+    private val mTweetButton by lazy { findViewById(R.id.layout_post_tweet) }
     private var mEditText: EditText? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,7 +39,6 @@ class TweetActivity : AppCompatActivity() {
         mLayout = findViewById(R.id.layout_post_tweet)
 
         mEditText = findViewById(R.id.editText) as EditText
-        mTweetButton = findViewById(R.id.button_tweet) as Button
 
         mEditText!!.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(text: CharSequence, start: Int, count: Int, after: Int) {

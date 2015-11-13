@@ -4,7 +4,6 @@ import android.accounts.Account
 import android.accounts.AccountManager
 import android.app.Activity
 import android.content.ContentResolver
-import android.content.Context
 import android.content.Intent
 import android.content.SyncRequest
 import android.net.Uri
@@ -15,27 +14,24 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.util.Log
 import android.view.KeyEvent
-import android.view.View
 import android.widget.Button
 import android.widget.EditText
 
 import mrkm4ntr.twitterclient.R
 import mrkm4ntr.twitterclient.sync.TwitterSyncAdapter
-import twitter4j.Twitter
 import twitter4j.auth.AccessToken
 import twitter4j.auth.RequestToken
 
 class OAuthActivity : AppCompatActivity() {
 
     private var mRequestToken: RequestToken? = null
-    private var mView: View? = null
+    private val mView by lazy { findViewById(R.id.oauth_layout) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_oauth)
         val toolbar = findViewById(R.id.toolbar) as Toolbar
         setSupportActionBar(toolbar)
-        mView = findViewById(R.id.oauth_layout)
 
         val pinText = findViewById(R.id.password_pin) as EditText
         val authButton = findViewById(R.id.button_auth) as Button
