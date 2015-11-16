@@ -2,6 +2,7 @@ package mrkm4ntr.twitterclient.activities
 
 import android.accounts.AccountManager
 import android.content.Intent
+import android.database.Cursor
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
@@ -18,6 +19,8 @@ import android.widget.ImageView
 import android.widget.TextView
 
 import mrkm4ntr.twitterclient.R
+import mrkm4ntr.twitterclient.data.TwitterContract
+import mrkm4ntr.twitterclient.extensions.accountId
 import mrkm4ntr.twitterclient.sync.TwitterSyncAdapter
 import mrkm4ntr.twitterclient.views.DetailFragment
 import mrkm4ntr.twitterclient.views.StatusAdapter
@@ -66,7 +69,26 @@ class TimelineActivity : AppCompatActivity(), TimelineFragment.Callback {
         val intent = Intent(this, TweetActivity::class.java)
         fab.setOnClickListener { view -> startActivity(intent) }
 
-        object: AsyncTask<Void, Void, User>() {
+        accountId?.let {
+            with(contentResolver.query(TwitterContract.AccountEntry.buildAccountUri(it), null, null, null, null)) {
+                if (moveToFirst()) {
+                    val selfIconView = findViewById(R.id.navigation_icon) as ImageView
+                    val profileImageURL = getString(getColumnIndex(TwitterContract.AccountEntry.COLUMN_PROFILE_IMAGE_URL))
+                    StatusAdapter.UpdateImageViewTask(selfIconView, profileImageURL).execute()
+                    val selfBackgroundView = findViewById(R.id.navigation_background) as ImageView
+                    val profileBackgroundImageURL = getString(getColumnIndex(TwitterContract.AccountEntry.COLUMN_PROFILE_BACKGROUND_IMAGE_URL))
+                    StatusAdapter.UpdateImageViewTask(selfBackgroundView, profileBackgroundImageURL).execute()
+                    with(findViewById(R.id.navigation_name_textView) as TextView) {
+                        text = getString(getColumnIndex(TwitterContract.AccountEntry.COLUMN_NAME))
+                    }
+                    with(findViewById(R.id.navitation_screenName_textView) as TextView) {
+                        text = "@${getString(getColumnIndex(TwitterContract.AccountEntry.COLUMN_SCREEN_NAME))}"
+                    }
+                }
+            }
+        }
+
+        /*object: AsyncTask<Void, Void, User>() {
             override fun doInBackground(vararg params: Void?): User? {
                 try {
                     val context = this@TimelineActivity
@@ -96,7 +118,7 @@ class TimelineActivity : AppCompatActivity(), TimelineFragment.Callback {
                     }
                 }
             }
-        }.execute()
+        }.execute()*/
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {

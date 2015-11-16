@@ -3,10 +3,7 @@ package mrkm4ntr.twitterclient.activities
 import android.accounts.Account
 import android.accounts.AccountManager
 import android.app.Activity
-import android.content.ContentResolver
-import android.content.Context
-import android.content.Intent
-import android.content.SyncRequest
+import android.content.*
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
@@ -18,10 +15,15 @@ import android.view.KeyEvent
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
+import android.widget.TextView
 
 import mrkm4ntr.twitterclient.R
+import mrkm4ntr.twitterclient.data.TwitterContract
 import mrkm4ntr.twitterclient.sync.TwitterSyncAdapter
+import mrkm4ntr.twitterclient.views.StatusAdapter
 import twitter4j.Twitter
+import twitter4j.User
 import twitter4j.auth.AccessToken
 import twitter4j.auth.RequestToken
 
@@ -110,6 +112,31 @@ class OAuthActivity : AppCompatActivity() {
                 val accountManager = AccountManager.get(application)
                 accountManager.setPassword(account, it.tokenSecret)
                 accountManager.setAuthToken(account, type, it.token)
+
+                object: AsyncTask<Void, Void, User>() {
+                    override fun doInBackground(vararg params: Void?): User? {
+                        try {
+                            TwitterSyncAdapter.TWITTER.oAuthAccessToken = AccessToken(it.token, it.tokenSecret)
+                            return TwitterSyncAdapter.TWITTER.verifyCredentials()
+                        } catch (e: Exception) {
+                            return null
+                        }
+                    }
+
+                    override fun onPostExecute(result: User?) {
+                        result?.let {
+                            // TODO: 事前チェック
+                            val contentValues = ContentValues().apply {
+                                put(TwitterContract.AccountEntry.COLUMN_NAME, it.name)
+                                put(TwitterContract.AccountEntry.COLUMN_SCREEN_NAME, it.screenName)
+                                put(TwitterContract.AccountEntry.COLUMN_PROFILE_IMAGE_URL, it.profileImageURL)
+                                put(TwitterContract.AccountEntry.COLUMN_PROFILE_BACKGROUND_IMAGE_URL, it.profileBackgroundImageURL)
+                            }
+                            contentResolver.insert(TwitterContract.AccountEntry.CONTENT_URI, contentValues)
+                        }
+                    }
+                }.execute()
+
                 val request = SyncRequest.Builder()
                         .syncPeriodic(SYNC_INTERVAL, FLEX_TIME)
                         .setSyncAdapter(account, getString(R.string.content_authority))

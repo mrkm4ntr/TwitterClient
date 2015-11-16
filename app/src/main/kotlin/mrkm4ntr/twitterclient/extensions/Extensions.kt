@@ -3,6 +3,7 @@ package mrkm4ntr.twitterclient.extensions
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.preference.PreferenceManager
 import android.widget.TextView
 import com.klinker.android.link_builder.Link
 import com.klinker.android.link_builder.LinkBuilder
@@ -34,3 +35,14 @@ fun TextView.applyHttpLink(context: Context) {
     val link = Link(httpPattern).setOnClickListener { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) }
     LinkBuilder.on(this).addLink(link).build()
 }
+
+var Context.accountId: Long?
+    get() = PreferenceManager.getDefaultSharedPreferences(this).run {
+        if (contains("accountId")) getLong("accountId", 0) else null
+    }
+    set(accountId) = PreferenceManager.getDefaultSharedPreferences(this).edit().run {
+        accountId?.let {
+            putLong("accountId", it)
+        }
+        apply()
+    }
