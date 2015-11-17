@@ -15,11 +15,11 @@ import android.support.v7.widget.Toolbar
 import android.view.MenuItem
 import android.widget.ImageView
 import android.widget.TextView
+import com.bumptech.glide.Glide
 import mrkm4ntr.twitterclient.R
 import mrkm4ntr.twitterclient.data.TwitterContract
 import mrkm4ntr.twitterclient.extensions.accountId
 import mrkm4ntr.twitterclient.views.DetailFragment
-import mrkm4ntr.twitterclient.views.StatusAdapter
 import mrkm4ntr.twitterclient.views.TimelineFragment
 
 class TimelineActivity : AppCompatActivity(), TimelineFragment.Callback, LoaderManager.LoaderCallbacks<Cursor> {
@@ -125,10 +125,10 @@ class TimelineActivity : AppCompatActivity(), TimelineFragment.Callback, LoaderM
             if (moveToFirst()) {
                 val selfIconView = findViewById(R.id.navigation_icon) as ImageView
                 val profileImageURL = getString(getColumnIndex(TwitterContract.AccountEntry.COLUMN_PROFILE_IMAGE_URL))
-                StatusAdapter.UpdateImageViewTask(selfIconView, profileImageURL).execute()
+                Glide.with(this@TimelineActivity).load(profileImageURL).into(selfIconView)
                 val selfBackgroundView = findViewById(R.id.navigation_background) as ImageView
                 val profileBackgroundImageURL = getString(getColumnIndex(TwitterContract.AccountEntry.COLUMN_PROFILE_BACKGROUND_IMAGE_URL))
-                StatusAdapter.UpdateImageViewTask(selfBackgroundView, profileBackgroundImageURL).execute()
+                Glide.with(this@TimelineActivity).load(profileBackgroundImageURL).into(selfBackgroundView)
                 with(findViewById(R.id.navigation_name_textView) as TextView) {
                     text = getString(getColumnIndex(TwitterContract.AccountEntry.COLUMN_NAME))
                 }
