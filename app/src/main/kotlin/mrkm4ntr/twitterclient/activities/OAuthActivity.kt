@@ -130,7 +130,7 @@ class OAuthActivity : AppCompatActivity() {
                                 put(TwitterContract.AccountEntry.COLUMN_NAME, it.name)
                                 put(TwitterContract.AccountEntry.COLUMN_SCREEN_NAME, it.screenName)
                                 put(TwitterContract.AccountEntry.COLUMN_PROFILE_IMAGE_URL, it.profileImageURL)
-                                put(TwitterContract.AccountEntry.COLUMN_PROFILE_BACKGROUND_IMAGE_URL, it.profileBackgroundImageURL)
+                                put(TwitterContract.AccountEntry.COLUMN_PROFILE_BANNER_URL, it.profileBannerMobileURL)
                             }
                             contentResolver.insert(TwitterContract.AccountEntry.CONTENT_URI, contentValues)
                         }

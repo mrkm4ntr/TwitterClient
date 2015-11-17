@@ -126,9 +126,9 @@ class TimelineActivity : AppCompatActivity(), TimelineFragment.Callback, LoaderM
                 val selfIconView = findViewById(R.id.navigation_icon) as ImageView
                 val profileImageURL = getString(getColumnIndex(TwitterContract.AccountEntry.COLUMN_PROFILE_IMAGE_URL))
                 Glide.with(this@TimelineActivity).load(profileImageURL).into(selfIconView)
-                val selfBackgroundView = findViewById(R.id.navigation_background) as ImageView
-                val profileBackgroundImageURL = getString(getColumnIndex(TwitterContract.AccountEntry.COLUMN_PROFILE_BACKGROUND_IMAGE_URL))
-                Glide.with(this@TimelineActivity).load(profileBackgroundImageURL).into(selfBackgroundView)
+                val selfBannerView = findViewById(R.id.navigation_banner) as ImageView
+                val profileBannerURL = getString(getColumnIndex(TwitterContract.AccountEntry.COLUMN_PROFILE_BANNER_URL))
+                Glide.with(this@TimelineActivity).load(profileBannerURL).into(selfBannerView)
                 with(findViewById(R.id.navigation_name_textView) as TextView) {
                     text = getString(getColumnIndex(TwitterContract.AccountEntry.COLUMN_NAME))
                 }

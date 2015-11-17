@@ -57,7 +57,7 @@ object TwitterContract {
             val COLUMN_NAME = "name"
             val COLUMN_SCREEN_NAME = "screen_name"
             val COLUMN_PROFILE_IMAGE_URL = "profile_image_url"
-            val COLUMN_PROFILE_BACKGROUND_IMAGE_URL = "profile_background_image_url"
+            val COLUMN_PROFILE_BANNER_URL = "profile_banner_url"
 
             fun buildAccountUri(id: Long): Uri {
                 return ContentUris.withAppendedId(CONTENT_URI, id)

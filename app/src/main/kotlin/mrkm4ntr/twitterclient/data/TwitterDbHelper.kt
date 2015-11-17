@@ -41,7 +41,8 @@ class TwitterDbHelper(context: Context) : SQLiteOpenHelper(
                 ${TwitterContract.AccountEntry.COLUMN_NAME} TEXT NOT NULL,
                 ${TwitterContract.AccountEntry.COLUMN_SCREEN_NAME} TEXT NOT NULL,
                 ${TwitterContract.AccountEntry.COLUMN_PROFILE_IMAGE_URL} TEXT NOT NULL,
-                ${TwitterContract.AccountEntry.COLUMN_PROFILE_BACKGROUND_IMAGE_URL} TEXT NOT NULL
+                ${TwitterContract.AccountEntry.COLUMN_PROFILE_BANNER_URL} TEXT NOT NULL,
+                UNIQUE (${TwitterContract.AccountEntry.COLUMN_SCREEN_NAME}) ON CONFLICT REPLACE
             )"""
     }
 }
