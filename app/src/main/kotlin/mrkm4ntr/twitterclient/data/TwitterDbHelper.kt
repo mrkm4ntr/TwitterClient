@@ -9,10 +9,12 @@ class TwitterDbHelper(context: Context) : SQLiteOpenHelper(
 
     override fun onCreate(sqLiteDatabase: SQLiteDatabase) {
         sqLiteDatabase.execSQL(SQL_CREATE_STATUS_TABLE)
+        sqLiteDatabase.execSQL(SQL_CREATE_ACCOUNT_TABLE)
     }
 
     override fun onUpgrade(sqLiteDatabase: SQLiteDatabase, i: Int, i1: Int) {
-        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TwitterContract.StatusEntry.TABLE_NAME)
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS ${TwitterContract.StatusEntry.TABLE_NAME}")
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS ${TwitterContract.AccountEntry.TABLE_NAME}")
         onCreate(sqLiteDatabase)
     }
 
@@ -31,6 +33,16 @@ class TwitterDbHelper(context: Context) : SQLiteOpenHelper(
                 ${TwitterContract.StatusEntry.COLUMN_USER_SCREEN_NAME} TEXT NOT NULL,
                 ${TwitterContract.StatusEntry.COLUMN_USER_LOCATION} TEXT NOT NULL,
                 ${TwitterContract.StatusEntry.COLUMN_USER_BIO} TEXT NOT NULL
+            )"""
+
+        private val SQL_CREATE_ACCOUNT_TABLE = """
+            CREATE TABLE ${TwitterContract.AccountEntry.TABLE_NAME} (
+                ${TwitterContract.AccountEntry._ID} INTEGER PRIMARY KEY ON CONFLICT REPLACE,
+                ${TwitterContract.AccountEntry.COLUMN_NAME} TEXT NOT NULL,
+                ${TwitterContract.AccountEntry.COLUMN_SCREEN_NAME} TEXT NOT NULL,
+                ${TwitterContract.AccountEntry.COLUMN_PROFILE_IMAGE_URL} TEXT NOT NULL,
+                ${TwitterContract.AccountEntry.COLUMN_PROFILE_BANNER_URL} TEXT NOT NULL,
+                UNIQUE (${TwitterContract.AccountEntry.COLUMN_SCREEN_NAME}) ON CONFLICT REPLACE
             )"""
     }
 }

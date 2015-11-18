@@ -5,14 +5,14 @@ import android.content.ContentValues
 import android.content.UriMatcher
 import android.database.Cursor
 import android.database.SQLException
-import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
+import mrkm4ntr.twitterclient.extensions.accountId
 
 class TwitterProvider : ContentProvider() {
-    private var mOpenHelper: TwitterDbHelper? = null
+
+    private val mOpenHelper by lazy { TwitterDbHelper(context) }
 
     override fun onCreate(): Boolean {
-        mOpenHelper = TwitterDbHelper(context)
         return true
     }
 
@@ -20,17 +20,23 @@ class TwitterProvider : ContentProvider() {
                        selectionArgs: Array<String>?, sortOrder: String?): Cursor? {
         val cursor = when (uriMather.match(uri)) {
             STATUS -> {
-                mOpenHelper!!.readableDatabase.query(
+                mOpenHelper.readableDatabase.query(
                         TwitterContract.StatusEntry.TABLE_NAME, projection, selection,
                         selectionArgs, null, null, sortOrder)
             }
             STATUS_WITH_ID -> {
-                mOpenHelper!!.readableDatabase.query(
+                mOpenHelper.readableDatabase.query(
                         TwitterContract.StatusEntry.TABLE_NAME, projection,
-                        TwitterContract.StatusEntry._ID + " = ? ",
+                        "${TwitterContract.StatusEntry._ID} = ? ",
                         arrayOf<String>(uri.pathSegments[1]), null, null, sortOrder)
             }
-            else -> throw UnsupportedOperationException("Unknown uri:" + uri)
+            ACCOUNT_WITH_ID -> {
+                mOpenHelper.readableDatabase.query(
+                        TwitterContract.AccountEntry.TABLE_NAME, projection,
+                        "${TwitterContract.AccountEntry._ID} = ?",
+                        arrayOf<String>(uri.pathSegments[1]), null, null, sortOrder)
+            }
+            else -> throw UnsupportedOperationException("Unknown uri:$uri")
         }
         cursor.setNotificationUri(context!!.contentResolver, uri)
         return cursor
@@ -40,12 +46,12 @@ class TwitterProvider : ContentProvider() {
         when (uriMather.match(uri)) {
             STATUS -> return TwitterContract.StatusEntry.CONTENT_TYPE
             STATUS_WITH_ID -> return TwitterContract.StatusEntry.CONTENT_ITEM_TYPE
-            else -> throw UnsupportedOperationException("Unknown uri: " + uri)
+            else -> throw UnsupportedOperationException("Unknown uri: $uri}")
         }
     }
 
     override fun insert(uri: Uri, contentValues: ContentValues?): Uri? {
-        val db = mOpenHelper!!.writableDatabase
+        val db = mOpenHelper.writableDatabase
 
         val returnUri = when (uriMather.match(uri)) {
             STATUS -> {
@@ -53,17 +59,26 @@ class TwitterProvider : ContentProvider() {
                 if (_id > 0) {
                     TwitterContract.StatusEntry.buildStatusUri(_id)
                 } else {
-                    throw SQLException("Failed to insert row into " + uri)
+                    throw SQLException("Failed to insert row into $uri")
                 }
             }
-            else -> throw UnsupportedOperationException("Unknown uri:" + uri)
+            ACCOUNT -> {
+                val _id = db.insert(TwitterContract.AccountEntry.TABLE_NAME, null, contentValues)
+                if (_id > 0) {
+                    context.accountId = _id
+                    TwitterContract.AccountEntry.buildAccountUri(_id)
+                } else {
+                    throw SQLException("Failed to insert row into $uri")
+                }
+            }
+            else -> throw UnsupportedOperationException("Unknown uri:$uri")
         }
         context!!.contentResolver.notifyChange(uri, null)
         return returnUri
     }
 
     override fun bulkInsert(uri: Uri, values: Array<ContentValues>): Int {
-        val db = mOpenHelper!!.writableDatabase
+        val db = mOpenHelper.writableDatabase
 
         when (uriMather.match(uri)) {
             STATUS -> {
@@ -97,11 +112,15 @@ class TwitterProvider : ContentProvider() {
         private val uriMather = UriMatcher(UriMatcher.NO_MATCH).apply {
             val authority = TwitterContract.CONTENT_AUTHORITY
             addURI(authority, TwitterContract.PATH_STATUS, STATUS)
-            addURI(authority, TwitterContract.PATH_STATUS + "/*", STATUS_WITH_ID)
+            addURI(authority, "${TwitterContract.PATH_STATUS}/*", STATUS_WITH_ID)
+            addURI(authority, TwitterContract.PATH_ACCOUNT, ACCOUNT)
+            addURI(authority, "${TwitterContract.PATH_ACCOUNT}/*", ACCOUNT_WITH_ID)
         }
 
         private val STATUS = 100
         private val STATUS_WITH_ID = 101
+        private val ACCOUNT = 200
+        private val ACCOUNT_WITH_ID = 201
 
     }
 }

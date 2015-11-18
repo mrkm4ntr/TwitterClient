@@ -39,4 +39,29 @@ object TwitterContract {
             }
         }
     }
+
+    val PATH_ACCOUNT = "accounts"
+
+    class AccountEntry : BaseColumns {
+        companion object {
+            // KT-3180
+            val _ID = BaseColumns._ID
+            val _COUNT = BaseColumns._COUNT
+
+            val CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_ACCOUNT).build()
+
+            val CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_STATUS
+
+            val TABLE_NAME = "accounts"
+
+            val COLUMN_NAME = "name"
+            val COLUMN_SCREEN_NAME = "screen_name"
+            val COLUMN_PROFILE_IMAGE_URL = "profile_image_url"
+            val COLUMN_PROFILE_BANNER_URL = "profile_banner_url"
+
+            fun buildAccountUri(id: Long): Uri {
+                return ContentUris.withAppendedId(CONTENT_URI, id)
+            }
+        }
+    }
 }
