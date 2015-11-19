@@ -6,13 +6,9 @@ import android.os.IBinder
 
 class TwitterAuthenticatorService : Service() {
 
-    private var mAuthenticator: TwitterAuthenticator? = null
-
-    override fun onCreate() {
-        mAuthenticator = TwitterAuthenticator(this)
-    }
+    private val authenticator by lazy { TwitterAuthenticator(this) }
 
     override fun onBind(intent: Intent): IBinder? {
-        return mAuthenticator!!.iBinder
+        return authenticator.iBinder
     }
 }
