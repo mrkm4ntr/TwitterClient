@@ -2,27 +2,29 @@ package mrkm4ntr.twitterclient.activities
 
 import android.accounts.Account
 import android.accounts.AccountManager
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.app.Activity
-import android.content.*
+import android.content.ContentResolver
+import android.content.ContentValues
+import android.content.Intent
+import android.content.SyncRequest
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
+import android.text.TextUtils
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageView
-import android.widget.TextView
-
 import mrkm4ntr.twitterclient.R
 import mrkm4ntr.twitterclient.data.TwitterContract
 import mrkm4ntr.twitterclient.sync.TwitterSyncAdapter
-import mrkm4ntr.twitterclient.views.StatusAdapter
-import twitter4j.Twitter
+import twitter4j.TwitterException
 import twitter4j.User
 import twitter4j.auth.AccessToken
 import twitter4j.auth.RequestToken
@@ -30,21 +32,28 @@ import twitter4j.auth.RequestToken
 class OAuthActivity : AppCompatActivity() {
 
     private var mRequestToken: RequestToken? = null
-    private var mView: View? = null
+
+    private val pinTextView by lazy { findViewById(R.id.password_pin) as EditText }
+    private val oauthFormView by lazy { findViewById(R.id.oauth_form) }
+    private val progressView by lazy { findViewById(R.id.auth_progress) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_oauth)
-        val toolbar = findViewById(R.id.toolbar) as Toolbar
-        setSupportActionBar(toolbar)
-        mView = findViewById(R.id.oauth_layout)
+        //val toolbar = findViewById(R.id.toolbar) as Toolbar
+        //setSupportActionBar(toolbar)
 
-        val pinText = findViewById(R.id.password_pin) as EditText
         val authButton = findViewById(R.id.button_auth) as Button
 
         authButton.setOnClickListener {
-            val pin = pinText.text.toString()
-            GetAccessTokenTask(pin).execute()
+            pinTextView.error = null
+            val pin = pinTextView.text.toString()
+            if (TextUtils.isEmpty(pin)) {
+                pinTextView.error = "暗証番号を入力してください"
+            } else {
+                showProgress(true)
+                GetAccessTokenTask(pin).execute()
+            }
         }
 
         val openTwitterButton = findViewById(R.id.button_open_twitter) as Button
@@ -62,6 +71,30 @@ class OAuthActivity : AppCompatActivity() {
         return super.onKeyDown(keyCode, event)
     }
 
+    fun showProgress(show: Boolean) {
+        val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime)
+
+        oauthFormView.visibility = if (show) View.GONE else View.VISIBLE
+        oauthFormView.animate()
+                .setDuration(shortAnimTime.toLong())
+                .alpha((if (show) 0 else 1).toFloat())
+                .setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        oauthFormView.visibility = if (show) View.GONE else View.VISIBLE
+                    }
+                })
+
+        progressView.visibility = if (show) View.VISIBLE else View.GONE
+        progressView.animate()
+                .setDuration(shortAnimTime.toLong())
+                .alpha((if (show) 1 else 0).toFloat())
+                .setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        progressView.visibility = if (show) View.VISIBLE else View.GONE
+                    }
+                })
+    }
+
     inner class GetRequestTokenTask : AsyncTask<Void, Void, RequestToken>() {
 
         override fun doInBackground(vararg params: Void): RequestToken? {
@@ -77,34 +110,52 @@ class OAuthActivity : AppCompatActivity() {
         }
 
         override fun onPostExecute(requestToken: RequestToken?) {
-            super.onPostExecute(requestToken)
             requestToken?.let {
                 mRequestToken = it
                 startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it.authorizationURL)))
-            } ?: Snackbar.make(mView,
+            } ?: Snackbar.make(oauthFormView,
                         applicationContext.getString(R.string.message_error_requestToken),
                         Snackbar.LENGTH_SHORT).show()
         }
     }
 
-    inner class GetAccessTokenTask(private val mPin: String) : AsyncTask<Void, Void, AccessToken>() {
+    inner class GetAccessTokenTask(private val pin: String) :
+            AsyncTask<Void, Void, Pair<AccessToken?, Exception?>>() {
 
-        private val SYNC_INTERVAL = 60 * 60L
+        private val SYNC_INTERVAL = 24 * 60 * 60L
         private val FLEX_TIME = SYNC_INTERVAL / 3
 
-        override fun doInBackground(vararg params: Void): AccessToken? {
+        // I need Either...
+        override fun doInBackground(vararg params: Void): Pair<AccessToken?, Exception?> {
             try {
-                return TwitterSyncAdapter.TWITTER.getOAuthAccessToken(mRequestToken, mPin)
+                //return Pair(TwitterSyncAdapter.TWITTER.getOAuthAccessToken(mRequestToken, pin), null)
+                Thread.sleep(10000L)
+                return Pair(null, Exception())
             } catch (e: Exception) {
                 Log.d(LOG_TAG, e.toString())
+                return Pair(null, e)
             }
-
-            return null
         }
 
-        override fun onPostExecute(accessToken: AccessToken?) {
-            super.onPostExecute(accessToken)
-            accessToken?.let {
+        override fun onPostExecute(accessToken: Pair<AccessToken?, Exception?>) {
+            showProgress(false)
+            accessToken.first?.let {
+                val type = applicationContext.getString(R.string.sync_account_type)
+                val account = Account(it.screenName, type)
+                with(AccountManager.get(applicationContext)) {
+                    addAccountExplicitly(account, "", Bundle().apply {
+                        putString("tokenSecret", it.tokenSecret)
+                    })
+                    setAuthToken(account, type, it.token)
+                }
+            } ?: accessToken.second?.let {
+                val message = when (it) {
+                    is TwitterException -> applicationContext.getString(R.string.message_error_requestToken)
+                    else -> "通信エラーです"
+                }
+                Snackbar.make(oauthFormView, message, Snackbar.LENGTH_SHORT).show()
+            }
+            /*accessToken?.let {
                 TwitterSyncAdapter.TWITTER.oAuthAccessToken = it
                 val context = applicationContext
                 val type = context.getString(R.string.sync_account_type)
@@ -145,8 +196,8 @@ class OAuthActivity : AppCompatActivity() {
                 ContentResolver.requestSync(request)
                 setResult(Activity.RESULT_OK)
                 finish()
-            } ?: Snackbar.make(mView, applicationContext.getString(R.string.message_error_auth),
-                    Snackbar.LENGTH_SHORT).show()
+            } ?: Snackbar.make(pinTextView, applicationContext.getString(R.string.message_error_auth),
+                    Snackbar.LENGTH_SHORT).show()*/
         }
     }
 

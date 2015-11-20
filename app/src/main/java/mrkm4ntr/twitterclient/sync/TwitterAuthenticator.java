@@ -43,7 +43,8 @@ public class TwitterAuthenticator extends AbstractAccountAuthenticator {
     }
 
     @Override
-    public Bundle getAuthToken(AccountAuthenticatorResponse response, Account account, String accountType, Bundle options) throws NetworkErrorException {
+    public Bundle getAuthToken(AccountAuthenticatorResponse response, Account account,
+                               String accountType, Bundle options) throws NetworkErrorException {
         AccountManager accountManager = AccountManager.get(mContext);
         String authToken = accountManager.peekAuthToken(account, accountType);
         if (authToken != null && !authToken.isEmpty()) {
